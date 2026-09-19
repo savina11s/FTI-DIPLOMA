@@ -12,7 +12,7 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY = "!";
+    private static final String SECRET_KEY = System.getenv("JWT_SECRET");
     private static final long EXPIRATION_TIME_MS = 7200000;
 
     private SecretKey getSigningKey() {

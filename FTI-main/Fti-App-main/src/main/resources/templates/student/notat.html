@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="sq">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTI</title>
+
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+    
+    <script src="/js/app.js"></script>
+    <script src="/js/auth-interceptor.js"></script>
+</head>
+
+<body class="overflow-hidden">
+
+    <div class="d-flex vh-100 overflow-hidden" id="wrapper">
+
+<aside id="sidebar-wrapper"
+            class="bg-white border-end d-flex flex-column justify-content-between h-100 flex-shrink-0"
+            style="width: 250px;">
+
+<div>
+                
+                <div class="sidebar-heading px-3 py-3 border-bottom text-center">
+                    <a href="/student" class="d-block text-decoration-none">
+                        <img src="/images/ftilogo.png" alt="FTI Logo" class="sidebar-logo">
+                    </a>
+                </div>
+
+<div class="list-group list-group-flush py-3">
+                    
+                    <a href="/student" class="list-group-item list-group-item-action border-0 px-4 py-2.5">
+                        Profili
+                    </a>
+
+<a href="/nota" class="list-group-item list-group-item-action border-0 px-4 py-2.5 active">
+                        Notat
+                    </a>
+
+<a href="/mungesat" class="list-group-item list-group-item-action border-0 px-4 py-2.5">
+                        Mungesat
+                    </a>
+
+</div>
+            </div>
+
+<div class="p-3 border-top bg-white">
+                <a href="/" class="btn-logout d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded-2">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+
+        </aside>
+
+<div id="page-content-wrapper" class="w-100 bg-light d-flex flex-column h-100 overflow-hidden">
+
+<header
+                class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4 py-2 justify-content-between flex-shrink-0">
+                <div class="d-flex align-items-center">
+                    <h6 class="mb-0 fw-bold text-secondary"></h6>
+                </div>
+
+<div class="d-flex align-items-center gap-3">
+                    <div class="text-end d-none d-sm-block">
+                        <span class="d-block fw-bold small text-dark" id="headerStudentName">-</span>
+                    </div>
+                </div>
+            </header>
+
+<main class="flex-grow-1 overflow-y-auto p-4">
+
+                <div class="container py-2 grades-page-container" id="gradesPageContainer">
+                    <div class="text-center py-5 text-muted">
+                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                        Po ngarkohen notat...
+                    </div>
+                </div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+<div class="modal fade" id="permiresimModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content rounded-0 border">
+                <div class="modal-header bg-light py-2">
+                    <h6 class="modal-title fw-bold text-black">Kerkese Permiresimi</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <p class="small text-muted mb-1">Po kerkoni permiresim per lenden:</p>
+                    <p class="fw-bold text-black mb-3" id="modalSubjectTitle"></p>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Jo</button>
+                        <button type="button" class="btn btn-sm btn-dark" onclick="konfirmoPermiresimin()">Po</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="modal fade" id="anuloModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content rounded-0 border">
+                <div class="modal-header bg-light py-2">
+                    <h6 class="modal-title fw-bold text-black">Anulo Kerkesen</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <p class="small text-muted mb-1">A jeni i sigurt qe deshironi ta anuloni kerkesen per lenden:</p>
+                    <p class="fw-bold text-black mb-3" id="modalAnuloSubjectTitle"></p>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Jo</button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="konfirmoAnulimin()">Po</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+        const _jwt = localStorage.getItem('jwtToken'); const _h = _jwt ? { 'Authorization': 'Bearer ' + _jwt } : {};
+        let currentCellId = null;
+        let currentSubject = '';
+        let currentGrade = '';
+        let bsPermiresimModal = null;
+        let bsAnuloModal = null;
+
+        $(document).ready(function () {
+            loadStudentHeader();
+            loadStudentGrades();
+        });
+
+        async function loadStudentHeader() {
+            const userId = localStorage.getItem('userId');
+            const userEmail = localStorage.getItem('userEmail');
+
+            let url = '/api/student/me';
+            const params = [];
+            if (userId) params.push('userId=' + encodeURIComponent(userId));
+            if (userEmail) params.push('email=' + encodeURIComponent(userEmail));
+            if (params.length > 0) url += '?' + params.join('&');
+
+            try {
+                const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('jwtToken') || '') } });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.emriMbiemri && data.emriMbiemri !== '-') {
+                        $('#headerStudentName').text(data.emriMbiemri);
+                    }
+                    if (data.programiStudimit && data.programiStudimit !== '-') {
+                        $('#headerStudentProgram').text(data.programiStudimit);
+                    }
+                }
+            } catch (e) {
+                console.error("Gabim gjate ngarkimit te header-it:", e);
+            }
+        }
+
+        async function loadStudentGrades() {
+            const userId = localStorage.getItem('userId');
+            const userEmail = localStorage.getItem('userEmail');
+
+            let url = '/api/student/grades';
+            const params = [];
+            if (userId) params.push('userId=' + encodeURIComponent(userId));
+            if (userEmail) params.push('email=' + encodeURIComponent(userEmail));
+            if (params.length > 0) url += '?' + params.join('&');
+
+            try {
+                const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('jwtToken') || '') } });
+                if (!res.ok) return;
+
+                const grades = await res.json();
+                if (!grades || grades.length === 0) {
+                    $('#gradesPageContainer').html('<div class="text-center py-5 text-muted">Nuk ka nota te regjistruara ne sistem.</div>');
+                    return;
+                }
+
+                // Group grades by studyYear (descending: 3, 2, 1)
+                const grouped = {};
+                grades.forEach(g => {
+                    const yr = g.studyYear || 1;
+                    if (!grouped[yr]) grouped[yr] = [];
+                    grouped[yr].push(g);
+                });
+
+                const years = Object.keys(grouped).map(Number).sort((a, b) => b - a);
+                const container = $('#gradesPageContainer');
+                container.empty();
+
+                const romanYears = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV' };
+
+                years.forEach(yr => {
+                    const yearGrades = grouped[yr];
+                    const yearRoman = romanYears[yr] || yr;
+
+                    let yearKrediteFituara = 0;
+                    let yearTotalKredite = 0;
+                    let yearWeightedSum = 0;
+
+                    let rowsHtml = '';
+                    yearGrades.forEach((g, idx) => {
+                        const cellId = `grade-cell-${yr}-${idx}`;
+                        const kredite = g.kredite || 0;
+                        yearTotalKredite += kredite;
+
+                        let notaCellContent = '';
+                        if (g.nota && g.nota !== 'X' && g.notaValue !== null) {
+                            const gradeNum = g.notaValue;
+                            if (gradeNum >= 5) {
+                                yearKrediteFituara += kredite;
+                                yearWeightedSum += (gradeNum * kredite);
+                            }
+
+                            const isPermiresuar = (g.status === 'PERMIRESUAR');
+                            const isImprovedInDb = (g.status === 'IMPROVED' || g.status === 'PERMIRESIM' || g.status === 'P');
+
+                            if (isPermiresuar) {
+                                notaCellContent = `<span class="fw-bold text-dark" title="Notë e përmirësuar">${g.nota} / P</span>`;
+                            } else if (isImprovedInDb) {
+                                improvementRequestedSubjects.add(g.emriLende);
+                                notaCellContent = `
+                                    <div class="grade-cell-content">
+                                        <span class="fw-bold">${g.nota}</span>
+                                        <button type="button" class="btn-cancel-link" onclick="hapModalAnulimi('${escapeHtml(g.emriLende)}', '${cellId}', '${g.nota}', ${g.courseId})">
+                                            Anulo kerkesen
+                                        </button>
+                                    </div>
+                                `;
+                            } else if (gradeNum >= 5 && gradeNum < 10) {
+                                notaCellContent = `
+                                    <span class="grade-clickable" title="Kliko per te kerkuar permiresim" onclick="hapModalPermiresimi('${escapeHtml(g.emriLende)}', '${cellId}', '${g.nota}', ${g.courseId})">
+                                        ${g.nota}
+                                    </span>
+                                `;
+                            } else if (gradeNum < 5) {
+                                notaCellContent = `<span class="fw-bold text-danger" title="Note ngelese (Nuk lejohet permiresim)">${g.nota}</span>`;
+                            } else {
+                                notaCellContent = `<span class="fw-bold">${g.nota}</span>`;
+                            }
+                        } else {
+                            notaCellContent = `<span class="grade-pending">X</span>`;
+                        }
+
+                        rowsHtml += `
+                        <tr>
+                            <td class="subject-name">${escapeHtml(g.emriLende)}</td>
+                            <td class="col-center">${kredite}</td>
+                            <td class="col-center" id="${cellId}">
+                                ${notaCellContent}
+                            </td>
+                        </tr>
+                    `;
+                    });
+
+                    let yearAverageStr = '0.00';
+                    if (yearKrediteFituara > 0) {
+                        const avg = yearWeightedSum / yearKrediteFituara;
+                        yearAverageStr = formatMesatarja(avg);
+                    }
+
+                    const yearBlockHtml = `
+                    <div class="year-block mb-4">
+                        <h6 class="year-title">Viti ${yearRoman}</h6>
+                        <table class="grades-table">
+                            <thead>
+                            <tr>
+                                <th>Lenda</th>
+                                <th class="col-center">Kredite</th>
+                                <th class="col-center">Nota</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                ${rowsHtml}
+                            </tbody>
+                            <tfoot>
+                            <tr class="grades-table-summary">
+                                <td class="summary-label"></td>
+                                <td class="col-center summary-value">${yearKrediteFituara} / ${yearTotalKredite}</td>
+                                <td class="col-center summary-value">${yearAverageStr}</td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                `;
+
+                    container.append(yearBlockHtml);
+                });
+            } catch (e) {
+                console.error("Gabim gjate ngarkimit te notave te studentit:", e);
+            }
+        }
+
+        function formatMesatarja(avg) {
+            if (!avg || isNaN(avg) || avg <= 0) return '0.00';
+            // Ekuivalenti i saktë i DecimalFormat("0.00#") me RoundingMode.HALF_UP (njësoj si te profili)
+            const rounded3 = (Math.round((avg + Number.EPSILON) * 1000) / 1000).toFixed(3);
+            if (rounded3.endsWith('0')) {
+                return rounded3.slice(0, -1);
+            }
+            return rounded3;
+        }
+
+        const improvementRequestedSubjects = new Set();
+        let currentCourseId = null;
+
+        function showLimitToast(msg, isError = true) {
+            let toastEl = document.getElementById('improvementLimitToast');
+            if (!toastEl) {
+                toastEl = document.createElement('div');
+                toastEl.id = 'improvementLimitToast';
+                toastEl.style.cssText = 'position:fixed; bottom:25px; right:25px; padding:12px 20px; border-radius:10px; box-shadow:0 10px 25px rgba(0,0,0,0.2); z-index:99999; font-weight:600; font-size:0.9rem; display:flex; align-items:center; gap:8px; opacity:0; transition:opacity 0.3s ease; color:white;';
+                document.body.appendChild(toastEl);
+            }
+            toastEl.style.background = isError ? '#ef4444' : '#16a34a';
+            toastEl.innerHTML = `<i class="bi ${isError ? 'bi-exclamation-triangle-fill' : 'bi-check-circle-fill'}"></i> <span>${msg}</span>`;
+            toastEl.style.display = 'flex';
+            requestAnimationFrame(() => toastEl.style.opacity = '1');
+            setTimeout(() => {
+                toastEl.style.opacity = '0';
+                setTimeout(() => toastEl.style.display = 'none', 300);
+            }, 3000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        }
+
+        function hapModalPermiresimi(subjectName, cellId, grade, courseId) {
+            const num = parseFloat(grade);
+            if (isNaN(num) || num < 5 || num >= 10) {
+                return;
+            }
+
+            // Kontrolli i limitit: Maksimumi 2 lende per permiresim
+            if (improvementRequestedSubjects.size >= 2) {
+                showLimitToast("Mund te zgjidhni maksimumi 2 lende per permiresim!");
+                return;
+            }
+
+            currentSubject = subjectName;
+            currentCellId = cellId;
+            currentGrade = grade;
+            currentCourseId = courseId;
+            document.getElementById('modalSubjectTitle').innerText = subjectName;
+            bsPermiresimModal = new bootstrap.Modal(document.getElementById('permiresimModal'));
+            bsPermiresimModal.show();
+        }
+
+        async function konfirmoPermiresimin() {
+            if (currentCellId && currentSubject) {
+                const userId = localStorage.getItem('userId');
+                const userEmail = localStorage.getItem('userEmail');
+                const token = localStorage.getItem('jwtToken');
+
+                let url = '/api/student/improvement';
+                const params = [];
+                if (userId) params.push('userId=' + encodeURIComponent(userId));
+                if (userEmail) params.push('email=' + encodeURIComponent(userEmail));
+                if (params.length > 0) url += '?' + params.join('&');
+
+                try {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + (token || '')
+                        },
+                        body: JSON.stringify({
+                            courseId: currentCourseId,
+                            isImprovement: true
+                        })
+                    });
+
+                    if (res.ok) {
+                        improvementRequestedSubjects.add(currentSubject);
+                        const cell = document.getElementById(currentCellId);
+                        const cId = currentCourseId;
+                        cell.innerHTML = `
+                            <div class="grade-cell-content">
+                                <span class="fw-bold">${currentGrade}</span>
+                                <button type="button" class="btn-cancel-link" onclick="hapModalAnulimi('${escapeHtml(currentSubject)}', '${currentCellId}', '${currentGrade}', ${cId})">
+                                    Anulo kerkesen
+                                </button>
+                            </div>
+                        `;
+                        showLimitToast("Kerkesa per permiresim u regjistrua me sukses!", false);
+                    } else {
+                        const err = await res.json();
+                        showLimitToast(err.message || "Gabim gjate dergimit te kerkeses.");
+                    }
+                } catch (e) {
+                    console.error("Gabim permiresimi:", e);
+                    showLimitToast("Gabim lidhjeje me serverin.");
+                }
+            }
+            if (bsPermiresimModal) bsPermiresimModal.hide();
+        }
+
+        function hapModalAnulimi(subjectName, cellId, grade, courseId) {
+            currentSubject = subjectName;
+            currentCellId = cellId;
+            currentGrade = grade;
+            currentCourseId = courseId;
+            document.getElementById('modalAnuloSubjectTitle').innerText = subjectName;
+            bsAnuloModal = new bootstrap.Modal(document.getElementById('anuloModal'));
+            bsAnuloModal.show();
+        }
+
+        async function konfirmoAnulimin() {
+            if (currentCellId && currentSubject) {
+                const userId = localStorage.getItem('userId');
+                const userEmail = localStorage.getItem('userEmail');
+                const token = localStorage.getItem('jwtToken');
+
+                let url = '/api/student/improvement';
+                const params = [];
+                if (userId) params.push('userId=' + encodeURIComponent(userId));
+                if (userEmail) params.push('email=' + encodeURIComponent(userEmail));
+                if (params.length > 0) url += '?' + params.join('&');
+
+                try {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + (token || '')
+                        },
+                        body: JSON.stringify({
+                            courseId: currentCourseId,
+                            isImprovement: false
+                        })
+                    });
+
+                    if (res.ok) {
+                        improvementRequestedSubjects.delete(currentSubject);
+                        const cell = document.getElementById(currentCellId);
+                        const cId = currentCourseId;
+                        cell.innerHTML = `
+                            <span class="grade-clickable" title="Kliko per te kerkuar permiresim" onclick="hapModalPermiresimi('${escapeHtml(currentSubject)}', '${currentCellId}', '${currentGrade}', ${cId})">
+                                ${currentGrade}
+                            </span>
+                        `;
+                        showLimitToast("Kerkesa u anulua me sukses.", false);
+                    } else {
+                        const err = await res.json();
+                        showLimitToast(err.message || "Gabim gjate anulimit te kerkeses.");
+                    }
+                } catch (e) {
+                    console.error("Gabim anulimi:", e);
+                    showLimitToast("Gabim lidhjeje me serverin.");
+                }
+            }
+            if (bsAnuloModal) bsAnuloModal.hide();
+        }
+    </script>
+
+</body>
+
+</html>

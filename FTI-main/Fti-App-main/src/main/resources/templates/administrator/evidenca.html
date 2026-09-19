@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="sq">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTI</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/styleadm.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/auth-interceptor.js"></script>
+    <style>
+        .prof-avatar-lg {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+        }
+
+        .course-tag {
+            display: inline-block;
+            background: #f8fafc;
+            color: #1e293b;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.83rem;
+            font-weight: 600;
+            margin: 3px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-shkarko-ev {
+            background-color: #dc2626;
+            color: #fff;
+            border: none;
+            font-weight: 700;
+            padding: 12px 20px;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-shkarko-ev:hover {
+            background-color: #b91c1c;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(220, 38, 38, 0.35);
+        }
+
+        /* Butonat dhe Ngjyrat Amber te buta (si tek Orari dhe Alokimi) */
+        .btn-amber-action {
+            background-color: #f8b84e !important;
+            border-color: #f5a623 !important;
+            color: #ffffff !important;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+
+        .btn-amber-action:hover {
+            background-color: #f5a623 !important;
+            border-color: #d98218 !important;
+            color: #ffffff !important;
+        }
+
+        .btn-amber-soft {
+            background-color: #fffbeb !important;
+            border: 1px solid #fde68a !important;
+            color: #92400e !important;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+
+        .btn-amber-soft:hover {
+            background-color: #fef3c7 !important;
+            border-color: #fcdfa0 !important;
+            color: #78350f !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="wrapper">
+
+        <!-- ADMIN SIDEBAR -->
+        <aside id="sidebar-wrapper">
+            <div>
+                <div class="sidebar-heading px-3 py-3 border-bottom text-center">
+                    <a href="/std" class="d-block text-decoration-none">
+                        <img src="/images/ftilogo.png" alt="FTI Logo" class="sidebar-logo">
+                    </a>
+                </div>
+                <div class="list-group list-group-flush py-3">
+                    <a href="/dashboard_reports" class="list-group-item list-group-item-action px-4">Dashboard</a>
+                    <a href="/std" class="list-group-item list-group-item-action px-4">Studentet</a>
+                    <a href="/adm" class="list-group-item list-group-item-action px-4">Pedagoget</a>
+                    <a href="/lende" class="list-group-item list-group-item-action px-4">Lendet</a>
+                    <a href="/tc" class="list-group-item list-group-item-action px-4">Alokimi</a>
+                    <a href="/course_schedule" class="list-group-item list-group-item-action px-4">Orare</a>
+                    <a href="/evidenca" class="list-group-item list-group-item-action px-4 active">Evidenca</a>
+                </div>
+            </div>
+            <div class="p-3 border-top">
+                <a href="/" class="btn-logout d-flex align-items-center gap-2 px-3 py-2 rounded-2">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- PAGE CONTENT WRAPPER -->
+        <div id="page-content-wrapper">
+
+            <header class="navbar navbar-light bg-white border-bottom px-4 py-2 d-flex justify-content-between">
+                <h6 class="mb-0 fw-bold text-dark"></h6>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-end d-none d-sm-block">
+                        <span class="d-block fw-bold small text-dark">Administrator</span>
+                    </div>
+                </div>
+            </header>
+
+            <div id="page-wrapper" class="p-4">
+
+                <!-- FILTER CARD -->
+                <div class="card border-0 shadow-sm rounded-3 mb-4 w-100">
+                    <div class="card-body p-3">
+                        <form id="filterFormEvidenca" onsubmit="return false;">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-3">
+                                    <label class="form-label mb-1 fw-semibold text-muted"
+                                        style="font-size: 0.78rem;">Departamenti</label>
+                                    <select id="filterDepartamenti" class="form-select form-select-sm"
+                                        style="font-size: 0.82rem; height: 33px;">
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label mb-1 fw-semibold text-muted"
+                                        style="font-size: 0.78rem;">Pedagogu</label>
+                                    <select id="filterPedagogu" class="form-select form-select-sm"
+                                        style="font-size: 0.82rem; height: 33px;">
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label mb-1 fw-semibold text-muted"
+                                        style="font-size: 0.78rem;">Viti Akademik</label>
+                                    <select id="filterVitiAkademik" class="form-select form-select-sm"
+                                        style="font-size: 0.82rem; height: 33px;">
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label mb-1 fw-semibold text-muted"
+                                        style="font-size: 0.78rem;">Semestri</label>
+                                    <select id="filterSemestri" class="form-select form-select-sm"
+                                        style="font-size: 0.82rem; height: 33px;">
+                                        <option value="1">Semestri 1</option>
+                                        <option value="2">Semestri 2</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 d-flex gap-1">
+                                    <button type="button" id="btnFiltro"
+                                        class="btn btn-amber-action btn-sm w-100 d-flex align-items-center justify-content-center gap-1 shadow-sm"
+                                        style="height: 33px; font-size: 0.82rem;">
+                                        <i class="bi bi-search"></i> Kërko
+                                    </button>
+                                    <button type="button" id="btnReset"
+                                        class="btn btn-outline-secondary btn-sm px-2 shadow-sm" style="height: 33px;"
+                                        title="Pastro">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- RESULT SECTION: COMPACT BOX WITH ONLY NAME & DOWNLOAD BUTTON -->
+                <div id="resultSection" style="display: none; max-width: 240px; margin: 12px auto 0;">
+                    <div class="card border-0 shadow-sm rounded-3 p-2 text-center bg-white">
+                        <div class="fw-bold text-dark mb-2" id="cardProfName" style="font-size: 0.82rem;">Emri Mbiemri
+                        </div>
+                        <button type="button" id="btnDownloadWord"
+                            class="btn btn-amber-soft btn-sm w-100 shadow-sm py-1"
+                            style="font-size: 0.76rem; height: 28px; border-radius: 5px; font-weight: 600;"
+                            onclick="shkarkoCurrentProf()">
+                            Shkarko evidencën
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let allProfessors = [];
+        let allEvidenca = [];
+        let selectedProf = null;
+        let currentActiveAcademicYear = "2025-2026";
+        let availableAcademicYears = ["2025-2026"];
+
+        $(document).ready(function () {
+            loadAcademicYearConfig();
+            loadRealProfessors();
+
+            $('#filterDepartamenti').on('change', function () {
+                populateProfessors();
+                $('#resultSection').hide();
+            });
+
+            $('#filterPedagogu').on('change', function () {
+                $('#resultSection').hide();
+            });
+
+            $('#filterVitiAkademik').on('change', function () {
+                $('#resultSection').hide();
+            });
+
+            $('#filterSemestri').on('change', function () {
+                $('#resultSection').hide();
+            });
+
+            $('#btnFiltro').on('click', function () {
+                handleKerko();
+            });
+
+            $('#btnReset').on('click', function () {
+                $('#filterDepartamenti').prop('selectedIndex', 0);
+                $('#filterVitiAkademik').val(currentActiveAcademicYear);
+                $('#filterSemestri').val('1');
+                populateProfessors();
+                $('#resultSection').hide();
+                selectedProf = null;
+            });
+        });
+
+        async function loadAcademicYearConfig() {
+            try {
+                const token = localStorage.getItem('jwtToken') || '';
+                const authHeader = token ? { 'Authorization': 'Bearer ' + token } : {};
+                const res = await fetch('/api/admin/academic-year/current', { headers: authHeader });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.currentAcademicYear) currentActiveAcademicYear = data.currentAcademicYear;
+                    if (data.availableYears && data.availableYears.length > 0) availableAcademicYears = data.availableYears;
+                }
+            } catch (_) { }
+
+            const ySelect = $('#filterVitiAkademik');
+            ySelect.empty();
+            availableAcademicYears.forEach(y => {
+                const sel = (y === currentActiveAcademicYear) ? 'selected' : '';
+                ySelect.append(`<option value="${y}" ${sel}>${y}</option>`);
+            });
+        }
+
+        /* ---------- 1. NGARKIMI I TE GJITHE PEDAGOGEVE NGA DB + DEPARTAMENTET ---------- */
+        async function loadRealProfessors() {
+            const depSelect = $('#filterDepartamenti');
+            depSelect.empty();
+            depSelect.prop('disabled', true);
+
+            const token = localStorage.getItem('jwtToken') || '';
+            const authHeader = token ? { 'Authorization': 'Bearer ' + token } : {};
+
+            try {
+                // 1. Merr departamentet direkt nga endpoint-i i dedikuar
+                try {
+                    const resDept = await fetch('/api/admin/professors/departamentet', { headers: authHeader });
+                    if (resDept.ok) {
+                        const depts = await resDept.json();
+                        depSelect.empty();
+                        depSelect.prop('disabled', false);
+                        const uniqueDepts = [...new Set(depts)].filter(Boolean).sort();
+                        uniqueDepts.forEach(d => {
+                            depSelect.append(new Option(d, d));
+                        });
+                        console.log('[Evidenca] Departamentet nga API:', uniqueDepts);
+                    }
+                } catch (eDept) {
+                    console.warn('[Evidenca] Gabim marrje departamentesh:', eDept);
+                }
+
+                // 2. Merr listen e pedagogeve nga DB
+                const response = await fetch('/api/admin/professors', { headers: authHeader });
+                console.log('[Evidenca] Status i API professors:', response.status);
+
+                if (!response.ok) {
+                    console.error('[Evidenca] Gabim API professors:', response.status);
+                    depSelect.prop('disabled', false);
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('[Evidenca] Pedagoget e marre nga API:', data.length);
+
+                if (Array.isArray(data) && data.length > 0) {
+                    allProfessors = data;
+
+                    // Nese departamentet nuk u mbushen nga hapi 1, nxirri nga pedagoget
+                    if (depSelect.children('option').length === 0) {
+                        depSelect.empty();
+                        depSelect.prop('disabled', false);
+
+                        const uniqueDepts = [...new Set(
+                            allProfessors.map(p => (p.department || '').trim()).filter(Boolean)
+                        )].sort();
+
+                        uniqueDepts.forEach(d => {
+                            depSelect.append(new Option(d, d));
+                        });
+                    }
+
+                    // Mbush pedagoget per departamentin e pare te perzgjedhur
+                    populateProfessors();
+                } else {
+                    depSelect.prop('disabled', false);
+                }
+
+            } catch (err) {
+                console.error('[Evidenca] Gabim fetch:', err);
+                depSelect.prop('disabled', false);
+            }
+        }
+
+        /* ---------- 2. MBUSHJA E PEDAGOGEVE SIPAS DEPARTAMENTIT ---------- */
+        function populateProfessors() {
+            const selDep = ($('#filterDepartamenti').val() || '').trim();
+            const profSelect = $('#filterPedagogu');
+            profSelect.empty();
+
+            let list = Array.isArray(allProfessors) ? [...allProfessors] : [];
+
+            // Filter sipas departamentit
+            if (selDep) {
+                list = list.filter(p => (p.department || '').trim() === selDep);
+            }
+
+            list.sort((a, b) => ((a.emri || '') + ' ' + (a.mbiemri || '')).localeCompare((b.emri || '') + ' ' + (b.mbiemri || '')));
+
+            list.forEach(p => {
+                const fullName = `${p.emri || ''} ${p.mbiemri || ''}`.trim();
+                profSelect.append(new Option(fullName, p.id));
+            });
+        }
+
+        /* ---------- 4. NGARKIMI I EVIDENCES / ALOKIMEVE ---------- */
+        function formatSingleGroup(name) {
+            if (!name) return '';
+            let s = String(name).trim();
+            if (/^t[eë]\s+gjith[eë]/i.test(s) || /all/i.test(s)) return 'Të gjithë';
+            return s.replace(/^grupi?\s+/i, '').trim();
+        }
+
+        function formatGroupName(raw) {
+            if (!raw) return 'A';
+            let s = String(raw).trim();
+            if (/^t[eë]\s+gjith[eë]/i.test(s) || /all/i.test(s)) return 'Të gjithë';
+            let parts = s.split(',').map(p => formatSingleGroup(p)).filter(Boolean);
+            let result = [...new Set(parts)].join(', ');
+            return result || 'A';
+        }
+
+        function mergeGroups(g1, g2) {
+            if (!g1) return g2 || '';
+            if (!g2) return g1 || '';
+            const all = [...g1.split(','), ...g2.split(',')].map(s => formatSingleGroup(s)).filter(Boolean);
+            return [...new Set(all)].join(', ');
+        }
+
+        /* ---------- 5. HANDLE KERKO ---------- */
+        function handleKerko() {
+            const selProfId = $('#filterPedagogu').val();
+            const selDept = ($('#filterDepartamenti').val() || '').trim().toLowerCase();
+
+            if (!selProfId && !selDept) {
+                alert('Ju lutem zgjidhni departamentin ose pedagogun para se të kërkoni.');
+                return;
+            }
+
+            let p = null;
+            if (selProfId) {
+                p = allProfessors.find(x => String(x.id) === String(selProfId));
+            } else if (selDept) {
+                const filtered = allProfessors.filter(x => x.department && x.department.trim().toLowerCase() === selDept);
+                if (filtered.length > 0) p = filtered[0];
+            }
+
+            if (!p) {
+                alert('Nuk u gjet asnjë pedagog për zgjedhjen tuaj.');
+                return;
+            }
+
+            selectedProf = p;
+
+            // Fill Card: vetem emer mbiemer
+            $('#cardProfName').text(`${p.emri || ''} ${p.mbiemri || ''}`.trim());
+
+            $('#resultSection').fadeIn(200);
+        }
+
+        function matchesSemester(courseSem, selectedSem) {
+            if (!selectedSem) return true;
+            const cSem = String(courseSem || '1').trim().toUpperCase();
+            const sel = String(selectedSem).trim().toUpperCase();
+            if (sel === '1' || sel === 'I') {
+                return cSem === '1' || cSem === 'I' || cSem === 'SEM 1' || cSem === 'SEMESTRI 1' || cSem === 'SEMESTRI I';
+            }
+            if (sel === '2' || sel === 'II') {
+                return cSem === '2' || cSem === 'II' || cSem === 'SEM 2' || cSem === 'SEMESTRI 2' || cSem === 'SEMESTRI II';
+            }
+            return cSem === sel;
+        }
+
+        async function shkarkoCurrentProf() {
+            await shkarkoOriginalPDF();
+        }
+
+        async function shkarkoOriginalPDF() {
+            if (!selectedProf) return;
+
+            const profFullName = `${selectedProf.emri} ${selectedProf.mbiemri}`;
+            let deptName = (selectedProf.department || 'Inxhinierisë Informatike').trim();
+            let cleanDept = deptName.replace(/^departamenti\s+i\s+/i, '');
+
+            const selSemester = $('#filterSemestri').val() || '1';
+            const romanSemester = (selSemester === '2' || selSemester === 'II') ? 'II' : 'I';
+            const selAcadYear = $('#filterVitiAkademik').val() || currentActiveAcademicYear;
+
+            const token = localStorage.getItem('jwtToken') || '';
+            const authHeader = token ? { 'Authorization': 'Bearer ' + token } : {};
+
+            let courses = [];
+            try {
+                const res = await fetch(`/api/admin/teaching-courses/evidenca?professorId=${selectedProf.id}&semester=${encodeURIComponent(selSemester)}&academicYear=${encodeURIComponent(selAcadYear)}`, { headers: authHeader });
+                if (res.ok) {
+                    courses = await res.json();
+                }
+            } catch (err) {
+                console.error('[Evidenca] Gabim marrje te dhenash nga API:', err);
+            }
+
+            if (!courses || courses.length === 0) {
+                alert(`Pedagogu "${profFullName}" nuk ka lëndë mësimore të alokuara për Semestrin ${romanSemester} në vitin akademik ${selAcadYear}.`);
+                return;
+            }
+
+            // Convert /favicon.svg and /images/ftiidoclogo.png into PNG data URIs with white background for Word
+            const uptLogoPngData = await svgToPngBase64('/favicon.svg', 70, 70);
+            const ftiLogoPngData = await svgToPngBase64('/images/ftiidoclogo.png', 140, 55);
+            const wordContent = buildWordDoc(profFullName, deptName, courses, ftiLogoPngData, uptLogoPngData, romanSemester, selAcadYear);
+
+            // Download directly as Microsoft Word .doc file with UTF-8 BOM
+            const blob = new Blob(['\ufeff' + wordContent], {
+                type: 'application/msword;charset=utf-8'
+            });
+
+            const safeProfName = profFullName.replace(/[^a-zA-Z0-9_\-]/g, '_');
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Evidenca_${safeProfName}_Semestri_${romanSemester}.doc`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        }
+
+        function svgToPngBase64(svgUrl, width, height) {
+            return new Promise((resolve) => {
+                try {
+                    const img = new Image();
+                    img.crossOrigin = 'Anonymous';
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width || img.naturalWidth || 70;
+                        canvas.height = height || img.naturalHeight || 70;
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/png'));
+                    };
+                    img.onerror = () => resolve(null);
+                    img.src = svgUrl;
+                } catch (e) {
+                    resolve(null);
+                }
+            });
+        }
+
+        function getGroupCount(raw) {
+            if (!raw) return 1;
+            let s = String(raw).trim();
+            if (!s) return 1;
+            if (/^t[eë]\s+gjith[eë]/i.test(s) || /all/i.test(s)) return 1;
+            let parts = s.split(',').map(p => formatSingleGroup(p)).filter(Boolean);
+            let unique = [...new Set(parts)];
+            return unique.length > 0 ? unique.length : 1;
+        }
+
+        /* ---------- BUILD OFFICIAL MICROSOFT WORD DOCUMENT (HORIZONTAL / LANDSCAPE) ---------- */
+        function buildWordDoc(profName, deptName, courses, ftiLogoData, uptLogoData, customSemester, customAcademicYear) {
+            const vitiAk = customAcademicYear || currentActiveAcademicYear || getCurrentAcademicYear();
+            const now = new Date();
+            const dd = String(now.getDate()).padStart(2, '0');
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const yyyy = now.getFullYear();
+            const sysdate = `${dd}.${mm}.${yyyy}`;
+            const semestri = customSemester || ((now.getMonth() + 1 >= 9 || now.getMonth() + 1 <= 2) ? 'I' : 'II');
+
+            // Clean department string (prevent duplicate "Departamenti i Departamenti i...")
+            let cleanDept = (deptName || 'Inxhinieri Informatike').trim();
+            cleanDept = cleanDept.replace(/^departamenti\s+i\s+/i, '');
+
+            const courseSections = courses.map((c, index) => {
+                const progName = (c.programEmri && c.programEmri !== '—') ? c.programEmri : (cleanDept.includes('Telekom') ? 'Inxhinieri Telekomunikacioni' : (cleanDept.includes('Elektron') ? 'Inxhinieri Elektronike' : 'Inxhinieri Informatike'));
+
+                const hasLeksion = (Number(c.oreLeksion) || 0) > 0;
+                const hasSeminar = (Number(c.oreSeminar) || 0) > 0;
+                const hasLab = (Number(c.oreLaborator) || 0) > 0;
+                const hasDk = (Number(c.oreDetyreKursi) || 0) > 0;
+                const hasPr = (Number(c.orePraktike) || 0) > 0;
+
+                const fmtNum = (n) => {
+                    if (n === null || n === undefined || isNaN(n)) return '0';
+                    const num = Number(n);
+                    return num % 1 === 0 ? String(num) : num.toFixed(1).replace(/\.0$/, '');
+                };
+
+                const totalKredite = c.kredite || 6;
+                const kLekNum = Number(c.krediteLeksion != null ? c.krediteLeksion : (hasLeksion ? (totalKredite >= 6 ? 3 : 2) : 3)) || 0;
+                const kSemNum = Number(c.krediteSeminar != null ? c.krediteSeminar : (hasSeminar ? 1.5 : 1.5)) || 0;
+                const kLabNum = Number(c.krediteLaborator != null ? c.krediteLaborator : (hasLab ? 1 : 1)) || 0;
+                const kDkNum = Number(c.krediteDetyreKursi != null ? c.krediteDetyreKursi : (hasDk ? 0.5 : 0.5)) || 0;
+                const kPrNum = Number(c.kreditePraktike != null ? c.kreditePraktike : (hasPr ? 1 : 1)) || 0;
+
+                const cleanSeminar = formatGroupName(c.grupiSeminar);
+                const cleanLab = formatGroupName(c.grupiLaborator);
+                const cleanDk = formatGroupName(c.grupiDetyreKursi);
+                const cleanPr = formatGroupName(c.grupiPraktike);
+
+                const numSemGroups = hasSeminar ? getGroupCount(c.grupiSeminar) : 0;
+                const numLabGroups = hasLab ? getGroupCount(c.grupiLaborator) : 0;
+                const numDkGroups = hasDk ? getGroupCount(c.grupiDetyreKursi) : 0;
+                const numPrGroups = hasPr ? getGroupCount(c.grupiPraktike) : 0;
+
+                // Leksion is for all classes together -> takes 1x base lecture credits
+                const coveredLekCredits = hasLeksion ? kLekNum : 0;
+                // Seminar, Lab, Detyra, Praktike are multiplied by the number of classes/groups taught
+                const coveredSemCredits = hasSeminar ? (kSemNum * numSemGroups) : 0;
+                const coveredLabCredits = hasLab ? (kLabNum * numLabGroups) : 0;
+                const coveredDkCredits = hasDk ? (kDkNum * numDkGroups) : 0;
+                const coveredPrCredits = hasPr ? (kPrNum * numPrGroups) : 0;
+
+                const totalCoveredKredite = coveredLekCredits + coveredSemCredits + coveredLabCredits + coveredDkCredits + coveredPrCredits;
+
+                const kreditetLendesText = `${fmtNum(kLekNum)} Leksion + ${fmtNum(kSemNum)} Seminar + ${fmtNum(kLabNum)} Laborator + ${fmtNum(kDkNum)} DK/Projekt = ${totalKredite} kredite`;
+                const kreditetMbulonText = `${fmtNum(totalCoveredKredite)} kredite`;
+
+                const totalCourseOre = (Number(c.oreLeksion) || 0) + (Number(c.oreSeminar) || 0) + (Number(c.oreLaborator) || 0) + (Number(c.oreDetyreKursi) || 0) + (Number(c.orePraktike) || 0);
+
+                let primaryGroup = 'A';
+                if (hasLeksion) {
+                    primaryGroup = 'Të gjitha klasat';
+                } else if (hasSeminar && hasLab) {
+                    primaryGroup = formatGroupName(c.grupiSeminar + ', ' + c.grupiLaborator);
+                } else if (hasSeminar) {
+                    primaryGroup = cleanSeminar;
+                } else if (hasLab) {
+                    primaryGroup = cleanLab;
+                } else if (hasDk) {
+                    primaryGroup = cleanDk;
+                } else if (hasPr) {
+                    primaryGroup = cleanPr;
+                }
+
+                const pageBreakHtml = index > 0 ? `<br clear="all" style="page-break-before:always; mso-special-character:line-break;">` : '';
+
+                return `
+        ${pageBreakHtml}
+        <div class="Section1" style="page: Section1; mso-page-orientation: landscape; width: 100%; margin: 0; padding: 0;">
+
+            <!-- HEADER TABLE -->
+            <table style="width: 100%; border: none; border-collapse: collapse; margin-bottom: 4pt;">
+                <tr>
+                    <td style="width: 44%; vertical-align: top; border: none; padding: 0;">
+                        <table style="border: none; border-collapse: collapse;">
+                            <tr>
+                                <td style="border: none; padding: 0; text-align: center; width: 44pt; vertical-align: middle;">
+                                    ${uptLogoData ? `<img src="${uptLogoData}" alt="UPT Logo" width="54" height="54" style="width: 54px; height: 54px; max-width: 54px; max-height: 54px; display: block;">` : `
+                                    <div style="border: 1.5pt solid black; padding: 2pt 3pt; width: 36pt;">
+                                        <div style="font-size: 5pt; letter-spacing: 1pt; font-family: monospace;">п п п п</div>
+                                        <div style="font-size: 5.5pt; font-weight: bold; letter-spacing: 0.5pt;">1951 &nbsp; 1991</div>
+                                        <div style="font-size: 10pt; font-weight: bold; letter-spacing: 0.5pt;">UPT</div>
+                                    </div>`}
+                                </td>
+                                <td style="border: none; padding-left: 6pt; vertical-align: middle; line-height: 1.2;">
+                                    <div style="font-size: 9pt; font-weight: bold;">Universiteti Politeknik i Tiranës</div>
+                                    <div style="font-size: 9pt; font-weight: bold;">Fakulteti i Teknologjisë së Informacionit</div>
+                                    <div style="font-size: 8.5pt;">Departamenti i ${cleanDept}</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td style="width: 16%; text-align: center; vertical-align: middle; border: none; padding: 0;">
+                        ${ftiLogoData ? `<img src="${ftiLogoData}" alt="FTI" width="115" height="44" style="width: 115px; height: 44px; max-height: 46px; display: inline-block;">` : `
+                        <div style="font-family: 'Arial Black', Impact, Arial, sans-serif; font-size: 26pt; font-weight: 900; color: #991b1b; letter-spacing: -1pt; line-height: 1;">FTI</div>`}
+                    </td>
+                    <td style="width: 40%; vertical-align: top; border: none; padding: 0;">
+                        <table style="width: 100%; border: 1.5pt solid #991b1b; border-collapse: collapse;">
+                            <tr>
+                                <td style="border: none; padding: 2.5pt 5pt; font-size: 8pt; line-height: 1.25;">
+                                    <div style="text-align: center; color: #991b1b; font-weight: bold; font-size: 10.5pt; letter-spacing: 2pt; margin-bottom: 1pt;">E V I D E N C Ë</div>
+                                    <div style="text-align: center; color: #991b1b; font-weight: bold; font-size: 9pt; text-decoration: underline; margin-bottom: 4pt;">Për plotësimin e orëve mësimore</div>
+                                    <div style="font-size: 8pt;">Viti akademik: <strong>${vitiAk}</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Semestri: <strong>${semestri}</strong></div>
+                                    <div style="margin-top: 1.5pt; font-size: 8pt;">Grada/Titulli Emri mbiemri i pedagogut: <strong>${profName}</strong></div>
+                                    <div style="margin-top: 2pt; font-style: italic; font-size: 8pt; text-align: left;">(firma): </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- COURSE INFO -->
+            <div style="margin: 4pt 0 4pt 0; font-size: 8.5pt; line-height: 1.35;">
+                <div>Lënda: ${c.courseEmri || ''}</div>
+                <div>Programi i studimit: ${progName}</div>
+                <div>Kreditet e lëndës: ${kreditetLendesText}</div>
+                <div>Kreditet e lëndës që mbulon pedagogu në auditor: ${kreditetMbulonText}</div>
+            </div>
+
+            <!-- TABLE 1: LEKSIONE -->
+            <table class="ev-table">
+                <thead>
+                    <tr>
+                        <th style="width: 4%;">Nr.</th>
+                        <th style="width: 10%;">Data</th>
+                        <th style="width: 22%;">Programi i studimit</th>
+                        <th style="width: 12%;">Grupi</th>
+                        <th style="width: 40%;">Tema e mësimit</th>
+                        <th style="width: 12%; color: #991b1b; line-height: 1.15;">Orë në<br>auditor<br><span style="color: #991b1b; font-weight: bold;">Leksione</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align: center; height: 14pt;">${hasLeksion ? '1' : ''}</td>
+                        <td style="text-align: center;">${hasLeksion ? sysdate : ''}</td>
+                        <td>${hasLeksion ? progName : ''}</td>
+                        <td style="text-align: center;">${hasLeksion ? 'Të gjitha klasat' : ''}</td>
+                        <td></td>
+                        <td style="text-align: center; font-weight: bold;">${hasLeksion ? `${fmtNum(coveredLekCredits)} kr / ${c.oreLeksion} orë` : ''}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="font-size: 8pt; line-height: 9pt; height: 9pt; margin: 0; padding: 0;">&nbsp;</div>
+
+            <!-- TABLE 2: SEMINARE -->
+            <table class="ev-table">
+                <thead>
+                    <tr>
+                        <th style="width: 4%;">Nr.</th>
+                        <th style="width: 10%;">Data</th>
+                        <th style="width: 22%;">Programi i studimit</th>
+                        <th style="width: 12%;">Grupi</th>
+                        <th style="width: 40%;">Tema e mësimit</th>
+                        <th style="width: 12%; color: #991b1b; line-height: 1.15;">Orë në<br>auditor<br><span style="color: #991b1b; font-weight: bold;">Seminare</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align: center; height: 14pt;">${hasSeminar ? '1' : ''}</td>
+                        <td style="text-align: center;">${hasSeminar ? sysdate : ''}</td>
+                        <td>${hasSeminar ? progName : ''}</td>
+                        <td style="text-align: center;">${hasSeminar ? cleanSeminar : ''}</td>
+                        <td></td>
+                        <td style="text-align: center; font-weight: bold;">${hasSeminar ? `${fmtNum(coveredSemCredits)} kr / ${c.oreSeminar} orë` : ''}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="font-size: 8pt; line-height: 9pt; height: 9pt; margin: 0; padding: 0;">&nbsp;</div>
+
+            <!-- TABLE 3: LABORATOR -->
+            <table class="ev-table">
+                <thead>
+                    <tr>
+                        <th style="width: 4%;">Nr.</th>
+                        <th style="width: 10%;">Data</th>
+                        <th style="width: 22%;">Programi i studimit</th>
+                        <th style="width: 12%;">Grupi</th>
+                        <th style="width: 40%;">Tema e mësimit</th>
+                        <th style="width: 12%; color: #991b1b; line-height: 1.15;">Orë në<br>auditor<br><span style="color: #991b1b; font-weight: bold;">Laborator</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align: center; height: 14pt;">${hasLab ? '1' : ''}</td>
+                        <td style="text-align: center;">${hasLab ? sysdate : ''}</td>
+                        <td>${hasLab ? progName : ''}</td>
+                        <td style="text-align: center;">${hasLab ? cleanLab : ''}</td>
+                        <td></td>
+                        <td style="text-align: center; font-weight: bold;">${hasLab ? `${fmtNum(coveredLabCredits)} kr / ${c.oreLaborator} orë` : ''}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="font-size: 8pt; line-height: 9pt; height: 9pt; margin: 0; padding: 0;">&nbsp;</div>
+
+            <!-- TABLE 4: DETYRA -->
+            <table class="ev-table">
+                <thead>
+                    <tr>
+                        <th style="width: 4%;">Nr.</th>
+                        <th style="width: 10%;">Data</th>
+                        <th style="width: 22%;">Programi i studimit</th>
+                        <th style="width: 12%;">Grupi</th>
+                        <th style="width: 40%;">Tema e mësimit (Detyra)</th>
+                        <th style="width: 12%; color: #991b1b; line-height: 1.15;">Orë në<br>auditor<br><span style="color: #991b1b; font-weight: bold;">Detyra</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align: center; height: 14pt;">${hasDk ? '1' : ''}</td>
+                        <td style="text-align: center;">${hasDk ? sysdate : ''}</td>
+                        <td>${hasDk ? progName : ''}</td>
+                        <td style="text-align: center;">${hasDk ? cleanDk : ''}</td>
+                        <td></td>
+                        <td style="text-align: center; font-weight: bold;">${hasDk ? `${fmtNum(coveredDkCredits)} kr / ${c.oreDetyreKursi} orë` : ''}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="font-size: 8pt; line-height: 9pt; height: 9pt; margin: 0; padding: 0;">&nbsp;</div>
+
+            <!-- TABLE 5: TOTALI I NGARKESES -->
+            <table class="ev-table">
+                <thead>
+                    <tr>
+                        <th style="width: 4%;">Nr.</th>
+                        <th style="width: 22%;">Programi i studimit</th>
+                        <th style="width: 12%;">Grupi</th>
+                        <th style="width: 50%; text-align: center;">Totali i ngarkesës</th>
+                        <th style="width: 12%; line-height: 1.15;">Orë në<br>auditor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align: center; height: 14pt;">1</td>
+                        <td>${progName}</td>
+                        <td style="text-align: center;">${primaryGroup}</td>
+                        <td style="text-align: center; font-weight: bold;">${fmtNum(totalCoveredKredite)} kredite</td>
+                        <td style="text-align: center; font-weight: bold;">${totalCourseOre} orë</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; height: 14pt;">2</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- FOOTER SIGNATURES -->
+            <div style="font-size: 10pt; line-height: 12pt; height: 12pt; margin: 0; padding: 0;">&nbsp;</div>
+            <table style="width: 100%; border: none; border-collapse: collapse; margin-top: 10pt; text-align: center;">
+                <tr>
+                    <td style="width: 33%; border: none; text-align: center; vertical-align: top;">
+                        <div style="font-size: 8.5pt; margin-bottom: 2pt;">Pranoi</div>
+                        <div style="font-weight: bold; font-size: 8.5pt; margin-bottom: 2pt;">Përgjegjësi i Departamentit</div>
+                        <div style="font-size: 8.5pt;">Prof.Asoc Hakik Paci</div>
+                    </td>
+                    <td style="width: 34%; border: none; text-align: center; vertical-align: top;">
+                        <div style="font-size: 8.5pt; margin-bottom: 2pt;">Konfirmoi</div>
+                        <div style="font-weight: bold; font-size: 8.5pt; margin-bottom: 2pt;">Zv. DEKANI</div>
+                        <div style="font-size: 8.5pt;">Prof. Dr. Indrit Enesi</div>
+                    </td>
+                    <td style="width: 33%; border: none; text-align: center; vertical-align: top;">
+                        <div style="font-size: 8.5pt; margin-bottom: 2pt;">Miratoi</div>
+                        <div style="font-weight: bold; font-size: 8.5pt; margin-bottom: 2pt;">DEKANI</div>
+                        <div style="font-size: 8.5pt;">Prof. Dr. Elinda Meçe</div>
+                    </td>
+                </tr>
+            </table>
+
+        </div>`;
+            }).join('');
+
+            return `<html xmlns:v="urn:schemas-microsoft-com:vml"
+      xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Evidencë - ${profName}</title>
+<!--[if gte mso 9]>
+<xml>
+<w:WordDocument>
+  <w:View>Print</w:View>
+  <w:Orientation>Landscape</w:Orientation>
+  <w:DoNotOptimizeForBrowser/>
+</w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+  @page {
+    size: 841.9pt 595.3pt; /* A4 Landscape: 297mm x 210mm */
+    mso-page-orientation: landscape;
+    margin: 15.0pt 24.0pt 15.0pt 24.0pt;
+  }
+  @page Section1 {
+    size: 841.9pt 595.3pt;
+    mso-page-orientation: landscape;
+    margin: 15.0pt 24.0pt 15.0pt 24.0pt;
+    mso-header-margin: 10.0pt;
+    mso-footer-margin: 10.0pt;
+    mso-paper-source: 0;
+  }
+  div.Section1 { 
+    page: Section1;
+    mso-page-orientation: landscape;
+  }
+  body {
+    font-family: 'Times New Roman', serif;
+    font-size: 9pt;
+    color: #000000;
+  }
+  table.ev-table {
+    width: 100%;
+    border-collapse: collapse;
+    mso-table-lspace: 0pt;
+    mso-table-rspace: 0pt;
+    margin-bottom: 3.5pt;
+  }
+  table.ev-table th, table.ev-table td {
+    border: 1.0pt solid #000000;
+    padding: 1.5pt 3pt;
+    font-size: 8pt;
+  }
+  table.ev-table th {
+    font-weight: normal;
+    text-align: center;
+    background: #ffffff;
+  }
+</style>
+</head>
+<body lang="sq">
+  ${courseSections || '<div class="Section1"><p style="text-align:center;color:#888;margin-top:30pt">Ky pedagog nuk ka lëndë të alokuara.</p></div>'}
+</body>
+</html>`;
+        }
+
+        function getCurrentAcademicYear() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = now.getMonth() + 1;
+            return m >= 9 ? `${y} - ${y + 1}` : `${y - 1} - ${y}`;
+        }
+    </script>
+</body>
+
+</html>

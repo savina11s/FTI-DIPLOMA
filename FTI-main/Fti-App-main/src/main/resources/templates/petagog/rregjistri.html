@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="sq">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTI</title>
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <script src="/js/html2canvas.min.js"></script>
+    <script src="/js/jspdf.umd.min.js"></script>
+
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/stylepetagog.css">
+
+    <script src="/js/auth-interceptor.js"></script>
+</head>
+
+<body class="overflow-hidden">
+
+    <div class="d-flex vh-100 overflow-hidden" id="wrapper">
+
+        <aside id="sidebar-wrapper"
+            class="bg-white border-end d-flex flex-column justify-content-between h-100 flex-shrink-0"
+            style="width: 250px;">
+
+            <div>
+
+                <div class="sidebar-heading px-3 py-3 border-bottom text-center">
+                    <a href="#" class="d-block text-decoration-none">
+                        <img src="/images/ftilogo.png" alt="FTI Logo" class="sidebar-logo" style="max-height: 40px;">
+                    </a>
+                </div>
+
+                <div class="list-group list-group-flush py-3" id="sidebarMenu">
+                    <a href="/rregjistri" id="menuLendet"
+                        class="list-group-item list-group-item-action border-0 px-4 py-2.5 active">
+                        Menaxhimi i lendeve
+                    </a>
+                    <a href="/lektor" id="menuLektor"
+                        class="list-group-item list-group-item-action border-0 px-4 py-2.5">
+                        Statistikat e deges
+                    </a>
+
+                </div>
+            </div>
+
+            <div class="p-3 border-top bg-white">
+                <a href="/" class="btn-logout d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded-2">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+
+        </aside>
+
+        <div id="page-content-wrapper" class="w-100 bg-light d-flex flex-column h-100 overflow-hidden">
+
+            <header
+                class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4 py-2 justify-content-between flex-shrink-0">
+                <div class="d-flex align-items-center">
+                    <h6 class="mb-0 fw-bold text-dark" id="headerTitle"></h6>
+                </div>
+
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-end d-none d-sm-block">
+                        <span class="d-block fw-bold small text-dark" id="headerProfName">Profesor</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="flex-grow-1 overflow-y-auto p-4">
+
+                <div class="container-fluid py-2">
+
+                    <div id="sectionMenaxhimiLendeve">
+
+                        <div class="card border-0 shadow-sm rounded-3 p-4 mb-4 bg-white">
+                            <h6 class="fw-bold mb-3 text-dark">Zgjidh rregjistrin</h6>
+
+                            <form id="filterForm" onsubmit="harversoKerkimin(event)">
+                                <div class="row g-2 align-items-end">
+
+                                    <div class="col-md-2">
+                                        <select class="form-select form-select-sm" id="selectVitiAkademik" required>
+                                            <option value="2025-2026" selected>Viti 2025-2026</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <select class="form-select form-select-sm" id="selectTipiOres" required>
+                                            <option value="Seminar" selected>Seminar</option>
+                                            <option value="Laborator">Laborator</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <select class="form-select form-select-sm" id="selectDepartamenti" required>
+                                            <option value="Departamenti i Inxhinierise Kompjuterike" data-dept-id="1"
+                                                selected>Departamenti i Inxhinierise Kompjuterike</option>
+                                            <option value="Departamenti i Elektronikes dhe Telekomunikacionit"
+                                                data-dept-id="2">Departamenti i Elektronikes dhe Telekomunikacionit
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <select class="form-select form-select-sm" id="selectLenda" required>
+                                            <option value="Programim ne Web" data-course-id="1" selected>Programim ne
+                                                Web</option>
+                                            <option value="Baza te Dhenash" data-course-id="2">Baza te Dhenash</option>
+                                            <option value="Struktura te Dhenash" data-course-id="3">Struktura te Dhenash
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <select class="form-select form-select-sm" id="selectKlasa" required>
+                                            <option value="Inxhinieri Informatike - Grupi A" data-class-id="1" selected>
+                                                Inxhinieri Informatike - Grupi A</option>
+                                            <option value="Inxhinieri Informatike - Grupi B" data-class-id="2">
+                                                Inxhinieri Informatike - Grupi B</option>
+                                            <option value="Inxhinieri Informatike - Grupi C" data-class-id="3">
+                                                Inxhinieri Informatike - Grupi C</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <button type="submit" class="btn btn-amber-light btn-sm w-100 fw-semibold">
+                                            Kerko
+                                        </button>
+                                    </div>
+
+                                </div>
+                            </form>
+                        </div>
+
+                        <div id="searchResultsSection" class="d-none">
+
+                            <div class="card border-0 shadow-sm rounded-3 bg-white overflow-hidden">
+
+                                <div class="card-header bg-white border-bottom px-4 pt-3 pb-0">
+                                    <ul class="nav custom-connected-tabs border-0" id="pedagogTabs" role="tablist">
+                                        <li class="nav-item" id="navItemTema" role="presentation">
+                                            <button class="connected-tab-btn active" id="tema-tab" data-bs-toggle="tab"
+                                                data-bs-target="#tema-pane" type="button" role="tab">
+                                                Tema
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" id="navItemRregjistri" role="presentation">
+                                            <button class="connected-tab-btn" id="rregjistri-tab" data-bs-toggle="tab"
+                                                data-bs-target="#rregjistri-pane" type="button" role="tab">
+                                                Regjistri
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" id="navItemMungesat" role="presentation">
+                                            <button class="connected-tab-btn" id="mungesat-tab" data-bs-toggle="tab"
+                                                data-bs-target="#mungesat-pane" type="button" role="tab">
+                                                Mungesat
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" id="navItemProvimi" role="presentation">
+                                            <button class="connected-tab-btn" id="provimi-tab" data-bs-toggle="tab"
+                                                data-bs-target="#provimi-pane" type="button" role="tab">
+                                                Provimi
+                                            </button>
+                                        </li>
+
+                                    </ul>
+                                </div>
+
+                                <div class="card-body p-4">
+                                    <div class="tab-content" id="pedagogTabsContent">
+
+                                        <div class="tab-pane fade show active" id="tema-pane" role="tabpanel">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="fw-bold mb-0 text-dark"></h6>
+                                                <button type="button" class="btn btn-amber-light btn-sm fw-semibold"
+                                                    onclick="hapModalShtoTema()">
+                                                    <i class="bi bi-plus-lg me-1"></i> Shto teme
+                                                </button>
+                                            </div>
+
+                                            <div class="table-responsive">
+                                                <table class="table table-hover align-middle border-light-subtle">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th style="width: 80px;">Java</th>
+                                                            <th style="width: 140px;">Data</th>
+                                                            <th style="width: 280px;">Tema</th>
+                                                            <th>Pershkrimi</th>
+                                                            <th class="text-center" style="width: 120px;">Veprime</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="tematTableBody">
+
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <div class="tab-pane fade" id="rregjistri-pane" role="tabpanel">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="fw-bold mb-0 text-dark">Rregjistri i notave</h6>
+
+                                                <div class="dropdown">
+                                                    <button
+                                                        class="btn btn-outline-amber-light btn-sm fw-semibold dropdown-toggle"
+                                                        type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        Veprime me Excel
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                                        <li><a class="dropdown-item small text-dark fw-semibold"
+                                                                href="#"
+                                                                onclick="shkarkoExcelNotat('gjitha'); return false;"><i
+                                                                    class="bi bi-download me-2"></i> Shkarko te gjitha
+                                                                notat</a></li>
+                                                        <li><a class="dropdown-item small text-dark fw-semibold"
+                                                                href="#"
+                                                                onclick="shkarkoExcelNotat('permiresime'); return false;"><i
+                                                                    class="bi bi-download me-2"></i> Shkarko vetem
+                                                                permirsimet</a></li>
+                                                        <li><a class="dropdown-item small text-dark fw-semibold"
+                                                                href="#"
+                                                                onclick="shkarkoExcelNotat('ngelasa'); return false;"><i
+                                                                    class="bi bi-download me-2"></i> Shkarko vetem
+                                                                ngelsat</a></li>
+                                                        <li><a class="dropdown-item small text-dark fw-semibold"
+                                                                href="#"
+                                                                onclick="shkarkoExcelNotat('ngelasa_permiresime'); return false;"><i
+                                                                    class="bi bi-download me-2"></i> Shkarko ngelsa +
+                                                                permirsim</a></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+
+                                            <div class="table-responsive">
+                                                <table class="table table-hover align-middle border-light-subtle mb-3"
+                                                    id="rregjistriTable">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th style="width: 50px;"></th>
+                                                            <th>Studenti</th>
+                                                            <th class="text-center" style="width: 120px;">Nota</th>
+                                                            <th class="text-center" style="width: 130px;">Statusi</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="rregjistriTableBody">
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <div class="d-flex justify-content-between align-items-center pt-2">
+                                                <div id="statusNotatMsg" class="d-none"></div>
+                                                <button class="btn btn-amber-light btn-sm px-4 fw-semibold ms-auto"
+                                                    onclick="ruajNotat()">
+                                                    Ruaj
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="tab-pane fade" id="mungesat-pane" role="tabpanel">
+                                            <div class="d-flex justify-content-end align-items-center mb-3">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div id="statusMungesatMsg" class="d-none"></div>
+                                                    <button class="btn btn-amber-light btn-sm fw-semibold"
+                                                        onclick="ruajMungesat()"> Ruaj
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div class="table-responsive">
+                                                <table class="table table-hover align-middle border-light-subtle"
+                                                    id="mungesatTable">
+                                                    <thead class="table-light">
+                                                        <tr id="mungesatHeaderRow">
+                                                            <th>Studenti</th>
+                                                            <th class="text-center">Jave 2 (26 Mars)</th>
+                                                            <th class="text-center">Jave 1 (12 Mars)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="mungesatTableBody">
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <div class="tab-pane fade" id="provimi-pane" role="tabpanel">
+                                            <div class="d-flex justify-content-end align-items-center mb-3">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div id="statusProvimiMsg" class="d-none"></div>
+                                                    <button type="button" class="btn btn-amber-light btn-sm fw-semibold"
+                                                        onclick="ruajExamAttendance()">
+                                                        Ruaj
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div class="table-responsive">
+                                                <table class="table table-hover align-middle border-light-subtle"
+                                                    id="examAttendanceTable">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th style="width: 60px;">Nr.</th>
+                                                            <th>Emri dhe Mbiemri</th>
+                                                            <th class="text-center" style="width: 110px;">
+                                                                <input class="form-check-input form-check-amber-light"
+                                                                    type="checkbox" id="examAttMasterCheck" checked
+                                                                    title="Zgjidh të gjithë / Hiq të gjithë"
+                                                                    onchange="toggleAllExamChecks(this)"
+                                                                    style="cursor: pointer; transform: scale(1.15);">
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="examAttendanceTableBody">
+                                                        <tr>
+                                                            <td colspan="3" class="text-center py-4 text-muted">
+                                                                Zgjidhni një lëndë dhe klikoni Kërko për të parë
+                                                                studentët.
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const _jwt = localStorage.getItem('jwtToken'); const _h = _jwt ? { 'Authorization': 'Bearer ' + _jwt } : {};
+        let pedagogOptionsData = null;
+        let currentRegisterData = null;
+        let meksTemat = [];
+
+        document.addEventListener('DOMContentLoaded', loadPedagogOptions);
+
+        // 1. NGARKIMI I OPSIONEVE TE PEDAGOGUT DHE LENDEVE DIREKT NGA API
+        async function loadPedagogOptions() {
+            const userId = localStorage.getItem('userId');
+            const userEmail = localStorage.getItem('userEmail');
+            const token = localStorage.getItem('jwtToken');
+
+            let url = '/api/pedagog/options';
+            const params = [];
+            if (userId) params.push('userId=' + encodeURIComponent(userId));
+            if (userEmail) params.push('email=' + encodeURIComponent(userEmail));
+            if (params.length > 0) url += '?' + params.join('&');
+
+            const headers = {
+                'Accept': 'application/json'
+            };
+            if (token) {
+                headers['Authorization'] = 'Bearer ' + token;
+            }
+
+            try {
+                let response = await fetch(url, { headers });
+                if (!response.ok && token) {
+                    // Provo pa query params vetem me Bearer token
+                    response = await fetch('/api/pedagog/options', { headers });
+                }
+                if (response.ok) {
+                    pedagogOptionsData = await response.json();
+                }
+            } catch (err) {
+                console.error("Gabim gjate marrjes se te dhenave nga API:", err);
+            }
+
+            if (!pedagogOptionsData) {
+                console.warn("API nuk ktheu te dhena, po perdorim te dhenat e ruajtura ne session");
+                pedagogOptionsData = {};
+            }
+
+            // 1. Vendos Emrin e Profesorit te loguar ne Header nga API
+            const headerProfName = document.getElementById('headerProfName');
+            if (headerProfName) {
+                const apiName = pedagogOptionsData.professorName || localStorage.getItem('userName') || localStorage.getItem('userEmail') || 'Pedagog';
+                headerProfName.textContent = apiName;
+            }
+
+            // Kontrollo aksesin per menute
+            const menuLektor = document.getElementById('menuLektor');
+            if (menuLektor) {
+                menuLektor.style.display = (pedagogOptionsData.isLektor) ? '' : 'none';
+            }
+            const menuLendet = document.getElementById('menuLendet');
+            if (menuLendet) {
+                menuLendet.style.display = '';
+            }
+
+            // 2. Viti Akademik nga API
+            const selectViti = document.getElementById('selectVitiAkademik');
+            if (selectViti) {
+                const years = (pedagogOptionsData.academicYears && pedagogOptionsData.academicYears.length > 0)
+                    ? pedagogOptionsData.academicYears
+                    : ["2025-2026"];
+                selectViti.innerHTML = '';
+                years.forEach((y, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = y;
+                    opt.textContent = `Viti ${y}`;
+                    if (idx === 0) opt.selected = true;
+                    selectViti.appendChild(opt);
+                });
+                selectViti.onchange = function () {
+                    harversoKerkimin(new Event('submit'));
+                };
+            }
+
+            // 3. Tipi i Ores (VETEM tipet qe ky profesor jep: Seminar dhe/ose Laborator nga API)
+            const selectTipi = document.getElementById('selectTipiOres');
+            if (selectTipi) {
+                const types = (pedagogOptionsData.types && pedagogOptionsData.types.length > 0)
+                    ? pedagogOptionsData.types
+                    : ["Seminar", "Laborator"];
+                selectTipi.innerHTML = '';
+                types.forEach((t, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = t;
+                    opt.textContent = t;
+                    if (idx === 0) opt.selected = true;
+                    selectTipi.appendChild(opt);
+                });
+
+                selectTipi.onchange = function () {
+                    filterCoursesBySelectedDepartment();
+                    harversoKerkimin(new Event('submit'));
+                };
+            }
+
+            // 4. Departamentet nga API
+            const selectDept = document.getElementById('selectDepartamenti');
+            if (selectDept) {
+                selectDept.innerHTML = '';
+                const deptList = (pedagogOptionsData.departments && pedagogOptionsData.departments.length > 0)
+                    ? pedagogOptionsData.departments
+                    : [];
+
+                if (deptList.length === 0) {
+                    selectDept.innerHTML = '<option value="" disabled selected>Nuk ka departamente</option>';
+                } else {
+                    deptList.forEach((d, idx) => {
+                        const opt = document.createElement('option');
+                        opt.value = d.name;
+                        opt.dataset.deptId = d.id || '';
+                        opt.textContent = d.name;
+                        if (idx === 0) opt.selected = true;
+                        selectDept.appendChild(opt);
+                    });
+                }
+
+                selectDept.onchange = function () {
+                    filterCoursesBySelectedDepartment();
+                    harversoKerkimin(new Event('submit'));
+                };
+            }
+
+            filterCoursesBySelectedDepartment();
+
+            // Auto-kerkim ne ngarkim nese ka lende dhe klase te zgjedhur
+            setTimeout(() => {
+                const selectKlasa = document.getElementById('selectKlasa');
+                if (selectKlasa && selectKlasa.value) {
+                    harversoKerkimin(new Event('submit'));
+                }
+            }, 400);
+        }
+
+        function filterCoursesBySelectedDepartment() {
+            if (!pedagogOptionsData || !pedagogOptionsData.courses || pedagogOptionsData.courses.length === 0) {
+                populateCourses([]);
+                return;
+            }
+
+            const selectDept = document.getElementById('selectDepartamenti');
+            const selectTipi = document.getElementById('selectTipiOres');
+            const selectedOption = selectDept && selectDept.selectedIndex >= 0 ? selectDept.options[selectDept.selectedIndex] : null;
+            const selectedType = selectTipi && selectTipi.value ? selectTipi.value.toUpperCase() : '';
+
+            let courses = pedagogOptionsData.courses || [];
+
+            // Filter by department
+            if (selectedOption && selectedOption.dataset && selectedOption.dataset.deptId) {
+                const deptId = parseInt(selectedOption.dataset.deptId);
+                const matched = courses.filter(c => {
+                    if (c.departmentId && c.departmentId === deptId) return true;
+                    if (c.departmentIds && c.departmentIds.includes(deptId)) return true;
+                    return false;
+                });
+                if (matched.length > 0) {
+                    courses = matched;
+                }
+            }
+
+            // Filter by selected type (Seminar vs Laborator vs Praktikë)
+            if (selectedType) {
+                courses = courses.filter(c => {
+                    if (c.roleTypes && c.roleTypes.length > 0) {
+                        if (selectedType.includes('LAB')) return c.roleTypes.some(r => r.toUpperCase().includes('LAB'));
+                        if (selectedType.includes('SEM')) return c.roleTypes.some(r => r.toUpperCase().includes('SEM'));
+                        if (selectedType.includes('PRAKTIK')) return c.roleTypes.some(r => r.toUpperCase().includes('PRAKTIK'));
+                    }
+                    const hasMatchingClass = (pedagogOptionsData.classes || []).some(cl => {
+                        const matchesCourse = (cl.courseId && cl.courseId === c.id) || (cl.courseIds && cl.courseIds.includes(c.id));
+                        if (!matchesCourse) return false;
+                        if (!cl.roleType) return false;
+                        const r = cl.roleType.toUpperCase();
+                        if (selectedType.includes('LAB')) return r.includes('LAB');
+                        if (selectedType.includes('SEM')) return r.includes('SEM');
+                        if (selectedType.includes('PRAKTIK')) return r.includes('PRAKTIK');
+                        return true;
+                    });
+                    return hasMatchingClass;
+                });
+            }
+
+            populateCourses(courses);
+        }
+
+        function populateCourses(courseList) {
+            const selectLenda = document.getElementById('selectLenda');
+            if (!selectLenda) return;
+
+            selectLenda.innerHTML = '';
+            let listToUse = (courseList && courseList.length > 0)
+                ? courseList
+                : [];
+
+            if (!listToUse || listToUse.length === 0) {
+                selectLenda.innerHTML = '<option value="" disabled selected>Nuk ka lëndë për këtë tip ore</option>';
+                populateClasses([]);
+                return;
+            }
+
+            const seenNames = new Set();
+            const uniqueCourses = [];
+
+            listToUse.forEach(c => {
+                const normName = (c.name || '').trim().toLowerCase();
+                if (!seenNames.has(normName)) {
+                    seenNames.add(normName);
+                    uniqueCourses.push({
+                        ...c,
+                        allCourseIds: c.id ? [c.id] : []
+                    });
+                } else {
+                    const existing = uniqueCourses.find(item => (item.name || '').trim().toLowerCase() === normName);
+                    if (existing && c.id && !existing.allCourseIds.includes(c.id)) {
+                        existing.allCourseIds.push(c.id);
+                    }
+                }
+            });
+
+            // Sort courses alphabetically
+            uniqueCourses.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'sq', { numeric: true, sensitivity: 'base' }));
+
+            uniqueCourses.forEach((c, idx) => {
+                const opt = document.createElement('option');
+                opt.value = c.name;
+                opt.dataset.courseId = c.id || '';
+                opt.dataset.allCourseIds = (c.allCourseIds || [c.id]).join(',');
+                opt.dataset.studyYear = c.studyYear || '';
+                opt.dataset.deptId = c.departmentId || '';
+                opt.textContent = c.name;
+                if (idx === 0) opt.selected = true;
+                selectLenda.appendChild(opt);
+            });
+
+            selectLenda.onchange = function () {
+                filterClassesBySelectedCourse();
+                harversoKerkimin(new Event('submit'));
+            };
+
+            filterClassesBySelectedCourse();
+        }
+
+        function filterClassesBySelectedCourse() {
+            if (!pedagogOptionsData || !pedagogOptionsData.classes || pedagogOptionsData.classes.length === 0) {
+                populateClasses([]);
+                return;
+            }
+
+            const selectLenda = document.getElementById('selectLenda');
+            const selectTipi = document.getElementById('selectTipiOres');
+            const selectedOption = selectLenda && selectLenda.selectedIndex >= 0 ? selectLenda.options[selectLenda.selectedIndex] : null;
+
+            const courseId = selectedOption && selectedOption.dataset && selectedOption.dataset.courseId ? parseInt(selectedOption.dataset.courseId) : null;
+            const allCourseIds = (selectedOption && selectedOption.dataset && selectedOption.dataset.allCourseIds)
+                ? selectedOption.dataset.allCourseIds.split(',').map(x => parseInt(x)).filter(Boolean)
+                : (courseId ? [courseId] : []);
+
+            const selectedType = selectTipi && selectTipi.value ? selectTipi.value.toUpperCase() : '';
+
+            // Strict roleType match - returns true only if the class role matches the selected type
+            const typeMatchesRole = (clRole, selType) => {
+                if (!selType) return true;
+                if (!clRole) return false;
+                const r = clRole.toUpperCase();
+                if (selType.includes('LAB')) return r.includes('LAB');
+                if (selType.includes('SEM')) return r.includes('SEM');
+                if (selType.includes('PRAKTIK')) return r.includes('PRAKTIK');
+                return true;
+            };
+
+            let filtered = (pedagogOptionsData.classes || []).filter(cl => {
+                if (allCourseIds.length > 0) {
+                    const matchesCourse = (cl.courseId && allCourseIds.includes(cl.courseId)) ||
+                                          (cl.courseIds && cl.courseIds.some(id => allCourseIds.includes(id)));
+                    if (!matchesCourse) return false;
+                }
+                if (!typeMatchesRole(cl.roleType, selectedType)) return false;
+                return true;
+            });
+
+            populateClasses(filtered);
+        }
+
+
+        function populateClasses(classList) {
+            const selectKlasa = document.getElementById('selectKlasa');
+            if (!selectKlasa) return;
+
+            selectKlasa.innerHTML = '';
+            let listToUse = (classList && classList.length > 0)
+                ? classList
+                : (pedagogOptionsData && pedagogOptionsData.classes ? pedagogOptionsData.classes : []);
+
+            if (!listToUse || listToUse.length === 0) {
+                selectKlasa.innerHTML = '<option value="" disabled selected>Nuk ka klasa te caktuara</option>';
+                return;
+            }
+
+            // Deduplicate classes by normalized name and group their classIds
+            const uniqueClasses = [];
+            listToUse.forEach(cl => {
+                const normName = (cl.name || '').trim();
+                if (!normName) return;
+                const existing = uniqueClasses.find(x => (x.name || '').trim().toLowerCase() === normName.toLowerCase());
+                if (!existing) {
+                    uniqueClasses.push({
+                        id: cl.id,
+                        name: normName,
+                        allClassIds: cl.id ? [cl.id] : (cl.allClassIds ? [...cl.allClassIds] : [])
+                    });
+                } else {
+                    if (cl.id && !existing.allClassIds.includes(cl.id)) {
+                        existing.allClassIds.push(cl.id);
+                    }
+                    if (cl.allClassIds) {
+                        cl.allClassIds.forEach(id => {
+                            if (!existing.allClassIds.includes(id)) existing.allClassIds.push(id);
+                        });
+                    }
+                }
+            });
+
+            // Sort alphabetically in natural order (e.g. Grupi A, Grupi B, Grupi C, Grupi D)
+            uniqueClasses.sort((a, b) => a.name.localeCompare(b.name, 'sq', { numeric: true, sensitivity: 'base' }));
+
+            let hasSelected = false;
+            uniqueClasses.forEach((cl, idx) => {
+                const opt = document.createElement('option');
+                opt.value = cl.name;
+                opt.dataset.classId = cl.id || '';
+                opt.dataset.allClassIds = (cl.allClassIds || [cl.id]).join(',');
+                opt.textContent = cl.name;
+                if (!hasSelected) {
+                    opt.selected = true;
+                    hasSelected = true;
+                }
+                selectKlasa.appendChild(opt);
+            });
+
+            selectKlasa.onchange = function () {
+                harversoKerkimin(new Event('submit'));
+            };
+        }
+
+        // 2. KERKIMI & NGARKIMI I TE DHENAVE TE REGJISTRIT
+        async function harversoKerkimin(event) {
+            if (event) event.preventDefault();
+            document.getElementById('searchResultsSection').classList.remove('d-none');
+
+            const selectLenda = document.getElementById('selectLenda');
+            const selectKlasa = document.getElementById('selectKlasa');
+            const selectViti = document.getElementById('selectVitiAkademik');
+            const selectTipi = document.getElementById('selectTipiOres');
+            const selectDept = document.getElementById('selectDepartamenti');
+
+            const selectedCourseOpt = selectLenda && selectLenda.selectedIndex >= 0 ? selectLenda.options[selectLenda.selectedIndex] : null;
+            const selectedClassOpt = selectKlasa && selectKlasa.selectedIndex >= 0 ? selectKlasa.options[selectKlasa.selectedIndex] : null;
+
+            const courseId = selectedCourseOpt && selectedCourseOpt.dataset ? selectedCourseOpt.dataset.courseId : null;
+            const courseName = selectedCourseOpt ? selectedCourseOpt.value : "Lenda";
+            const classId = selectedClassOpt && selectedClassOpt.dataset ? selectedClassOpt.dataset.classId : null;
+            const allClassIds = selectedClassOpt && selectedClassOpt.dataset ? selectedClassOpt.dataset.allClassIds : null;
+            const className = selectedClassOpt ? selectedClassOpt.value : "Grupi";
+            const academicYear = selectViti ? selectViti.value : "2025-2026";
+            const displayRoleType = selectTipi ? selectTipi.value : "Seminar";
+            // Map display name to backend roleType string
+            const roleTypeMap = {
+                'Seminar': 'SEMINAR',
+                'Laborator': 'LABORATOR',
+                'Detyra Kursi': 'DETYRE_KURSI',
+                'Praktikë': 'PRAKTIKE',
+                'Praktike': 'PRAKTIKE'
+            };
+            const roleType = roleTypeMap[displayRoleType] || displayRoleType.toUpperCase();
+            const deptName = selectDept ? selectDept.value : "";
+
+            // Perditeso Header-at
+            const regTitle = document.querySelector('#rregjistri-pane h6');
+            if (regTitle) regTitle.textContent = ` ${courseName} / ${className}`;
+
+            const statsHeaderP = document.querySelector('.pdf-only-header p');
+            if (statsHeaderP) {
+                statsHeaderP.innerHTML = `<strong>Dega/Departamenti:</strong> ${deptName || 'FTI'} &nbsp;|&nbsp; <strong>Viti:</strong> ${academicYear} &nbsp;|&nbsp; <strong>Grupi:</strong> ${className} &nbsp;|&nbsp; <strong>Lenda:</strong> ${courseName} (${roleType})`;
+            }
+
+            // Menaxhimi i tab-eve sipas rolit: Per Laborator shfaqen VETEM Tema dhe Mungesat
+            const isLab = (roleType === 'LABORATOR' || displayRoleType === 'Laborator');
+            const tabRegItem = document.getElementById('navItemRregjistri');
+            const paneReg = document.getElementById('rregjistri-pane');
+            const tabProvimiItem = document.getElementById('navItemProvimi');
+            const paneProvimi = document.getElementById('provimi-pane');
+
+            if (isLab) {
+                // Fshihen tab-et e Regjistrit dhe Provimit per laborator
+                if (tabRegItem) tabRegItem.classList.add('d-none');
+                if (paneReg) {
+                    paneReg.classList.add('d-none');
+                    paneReg.classList.remove('show', 'active');
+                }
+                if (tabProvimiItem) tabProvimiItem.classList.add('d-none');
+                if (paneProvimi) {
+                    paneProvimi.classList.add('d-none');
+                    paneProvimi.classList.remove('show', 'active');
+                }
+
+                // Nese ishte aktiv Regjistri ose Provimi, kalo automatikisht te Tema
+                const activeBtn = document.querySelector('#pedagogTabs .connected-tab-btn.active');
+                if (activeBtn && (activeBtn.id === 'rregjistri-tab' || activeBtn.id === 'provimi-tab')) {
+                    const temaBtn = document.getElementById('tema-tab');
+                    const temaPane = document.getElementById('tema-pane');
+                    if (temaBtn) {
+                        document.querySelectorAll('#pedagogTabs .connected-tab-btn').forEach(b => b.classList.remove('active'));
+                        temaBtn.classList.add('active');
+                    }
+                    if (temaPane) {
+                        document.querySelectorAll('#pedagogTabsContent .tab-pane').forEach(p => p.classList.remove('show', 'active'));
+                        temaPane.classList.add('show', 'active');
+                    }
+                }
+            } else {
+                if (tabRegItem) tabRegItem.classList.remove('d-none');
+                if (paneReg) paneReg.classList.remove('d-none');
+                if (tabProvimiItem) tabProvimiItem.classList.remove('d-none');
+                if (paneProvimi) paneProvimi.classList.remove('d-none');
+            }
+
+            // Ngarko Temat, Regjistrin (per mungesat), dhe Provimin (vetem nese nuk eshte laborator)
+            await Promise.all([
+                ngarkoTemat(courseId),
+                ngarkoRegjistrin(courseId, classId, academicYear, roleType, allClassIds),
+                !isLab ? ngarkoExamAttendance(courseId, classId) : Promise.resolve()
+            ]);
+        }
+
+        async function ngarkoRegjistrin(courseId, classId, academicYear, roleType, classIds) {
+            let url = '/api/pedagog/register';
+            const params = [];
+            if (courseId) params.push('courseId=' + courseId);
+            if (classId) params.push('classId=' + classId);
+            if (classIds) params.push('classIds=' + encodeURIComponent(classIds));
+            if (academicYear) params.push('academicYear=' + encodeURIComponent(academicYear));
+            if (roleType) params.push('roleType=' + encodeURIComponent(roleType));
+            if (params.length > 0) url += '?' + params.join('&');
+
+            try {
+                const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('jwtToken') || '') } });
+                if (res.ok) {
+                    currentRegisterData = await res.json();
+                    renditRegjistrin(currentRegisterData);
+                }
+            } catch (err) {
+                console.error("Gabim te ngarkimi i regjistrit:", err);
+            }
+        }
+
+        function renditRegjistrin(data) {
+            if (!data) return;
+
+            // Renditja alfabetike e studenteve sipas Emrit
+            if (data.students && Array.isArray(data.students)) {
+                data.students.sort((a, b) => (a.emri || '').localeCompare(b.emri || '', 'sq', { sensitivity: 'base' }));
+            }
+
+            // 1. Tabela e Notave
+            const tbodyNotat = document.getElementById('rregjistriTableBody');
+            if (tbodyNotat && data.students) {
+                tbodyNotat.innerHTML = '';
+                data.students.forEach((s, idx) => {
+                    const isAbsentInExam = (s.examAttendanceStatus === 'absent');
+
+                    let statusBadge;
+                    let inputField;
+
+                    if (isAbsentInExam) {
+                        statusBadge = '<span class="badge bg-secondary-subtle text-secondary border fw-bold px-2 py-1 student-status" title="Nuk u Paraqit në Provim">NP</span>';
+                        inputField = `<input type="number" class="form-control form-control-sm text-center fw-bold student-nota"
+                                value="" min="4" max="10" step="1"
+                                oninput="perditesoStatusin(this)">`;
+                    } else {
+                        statusBadge = (s.status === 'P')
+                            ? '<span class="badge badge-amber-soft px-2 py-1 student-status">P</span>'
+                            : ((s.status === 'N') ? '<span class="badge badge-danger-soft px-2 py-1 student-status">N</span>' : '<span class="text-muted small student-status">-</span>');
+                        inputField = `<input type="number" class="form-control form-control-sm text-center fw-bold student-nota"
+                                value="${s.grade != null ? s.grade : ''}" min="4" max="10" step="1"
+                                oninput="perditesoStatusin(this)">`;
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.dataset.studentId = s.studentId;
+                    tr.dataset.permiresim = s.permiresim ? "true" : "false";
+                    tr.dataset.examAbsent = isAbsentInExam ? "true" : "false";
+                    tr.dataset.examAbsentOrig = isAbsentInExam ? "true" : "false";
+                    tr.innerHTML = `
+                        <td>${idx + 1}</td>
+                        <td class="fw-semibold student-emri">${s.emri || ''}</td>
+                        <td>
+                            ${inputField}
+                        </td>
+                        <td class="text-center cell-status">
+                            ${statusBadge}
+                        </td>
+                    `;
+                    tbodyNotat.appendChild(tr);
+                });
+            }
+
+            // 2. Tabela e Mungesave
+            const theadMungesat = document.getElementById('mungesatHeaderRow');
+            const tbodyMungesat = document.getElementById('mungesatTableBody');
+
+            if (theadMungesat && data.attendanceColumns) {
+                theadMungesat.innerHTML = '<th>Studenti</th>';
+                data.attendanceColumns.forEach(col => {
+                    const th = document.createElement('th');
+                    th.className = 'text-center';
+                    th.textContent = col.title || col.key;
+                    theadMungesat.appendChild(th);
+                });
+            }
+
+            if (tbodyMungesat && data.students) {
+                tbodyMungesat.innerHTML = '';
+                data.students.forEach(s => {
+                    const tr = document.createElement('tr');
+                    tr.dataset.studentId = s.studentId;
+                    let colsHtml = `<td class="fw-semibold">${s.emri || ''}</td>`;
+                    if (data.attendanceColumns) {
+                        data.attendanceColumns.forEach(col => {
+                            const isChecked = s.attendance && s.attendance[col.key] !== false;
+                            colsHtml += `
+                                <td class="text-center">
+                                    <input class="form-check-input form-check-amber-light student-att-check"
+                                        data-col="${col.key}" type="checkbox" ${isChecked ? 'checked' : ''}
+                                        style="cursor: pointer; transform: scale(1.15);">
+                                </td>
+                            `;
+                        });
+                    }
+                    tr.innerHTML = colsHtml;
+                    tbodyMungesat.appendChild(tr);
+                });
+            }
+
+            // 3. Perditeso Statistikat
+            if (data.stats) {
+                perditesoPamjenStatistikave(data.stats);
+            }
+        }
+
+        // 3. PERDITESIMI LIVE I STATUSIT DHE STATISTIKAVE
+        function perditesoStatusin(input) {
+            const tr = input.closest('tr');
+            if (!tr) return;
+
+            const rawVal = input.value.trim();
+            const val = rawVal !== '' ? parseFloat(rawVal) : NaN;
+
+            // Kontrolli i intervalit 4 - 10 me ngjyre te kuqe
+            if (!isNaN(val) && (val < 4 || val > 10)) {
+                input.classList.add('border', 'border-danger', 'text-danger', 'bg-danger-subtle');
+            } else {
+                input.classList.remove('border-danger', 'text-danger', 'bg-danger-subtle');
+            }
+
+            const statusCell = tr.querySelector('.cell-status');
+            const isPermiresim = tr.dataset.permiresim === "true";
+
+            if (isNaN(val) || rawVal === '') {
+                // Nese fusha mbetet bosh: nese ka qene NP, rikthehet NP, perndryshe '-'
+                if (tr.dataset.examAbsentOrig === "true") {
+                    tr.dataset.examAbsent = "true";
+                    statusCell.innerHTML = '<span class="badge bg-secondary-subtle text-secondary border fw-bold px-2 py-1 student-status" title="Nuk u Paraqit në Provim">NP</span>';
+                } else {
+                    tr.dataset.examAbsent = "false";
+                    statusCell.innerHTML = '<span class="text-muted small student-status">-</span>';
+                }
+            } else {
+                // Sapo vendoset nje note numerike, statusi NP hiqet menjehere!
+                tr.dataset.examAbsent = "false";
+                if (isPermiresim) {
+                    statusCell.innerHTML = '<span class="badge badge-amber-soft px-2 py-1 student-status">P</span>';
+                } else if (val < 5) {
+                    statusCell.innerHTML = '<span class="badge badge-danger-soft px-2 py-1 student-status">N</span>';
+                } else {
+                    statusCell.innerHTML = '<span class="text-muted small student-status">-</span>';
+                }
+            }
+
+            llogaritStatistikatLive();
+        }
+
+        function llogaritStatistikatLive() {
+            const inputs = document.querySelectorAll('#rregjistriTableBody .student-nota');
+            const grades = [];
+
+            inputs.forEach(inp => {
+                const v = parseFloat(inp.value);
+                if (!isNaN(v)) grades.push(v);
+            });
+
+            if (grades.length === 0) return;
+
+            let sum = 0;
+            let passCount = 0;
+            let max = grades[0];
+            let min = grades[0];
+            const counts = {};
+
+            grades.forEach(g => {
+                sum += g;
+                if (g >= 5) passCount++;
+                if (g > max) max = g;
+                if (g < min) min = g;
+                const rounded = Math.round(g);
+                counts[rounded] = (counts[rounded] || 0) + 1;
+            });
+
+            const avg = (sum / grades.length).toFixed(2);
+            const passRate = ((passCount / grades.length) * 100).toFixed(1);
+
+            let modeVal = '-';
+            let maxFreq = 0;
+            for (const [k, v] of Object.entries(counts)) {
+                if (v > maxFreq) {
+                    maxFreq = v;
+                    modeVal = k;
+                }
+            }
+
+            const dist = [];
+            [10, 9, 8, 7, 6, 5, 4].forEach(note => {
+                const c = counts[note] || 0;
+                if (c > 0) {
+                    const pct = ((c / grades.length) * 100).toFixed(0);
+                    dist.push({ nota: note, studentCount: c, perqindja: pct });
+                }
+            });
+
+            const totalStudents = document.querySelectorAll('#rregjistriTableBody tr').length;
+            const participation = totalStudents > 0 ? ((grades.length / totalStudents) * 100).toFixed(1) : 0;
+
+            perditesoPamjenStatistikave({
+                mesatarja: avg,
+                kalueshmeria: passRate,
+                moda: modeVal,
+                notaLarteUlet: `${max} / ${min}`,
+                distribution: dist
+            });
+        }
+
+        function perditesoPamjenStatistikave(stats) {
+            if (!stats) return;
+
+            const statItems = document.querySelectorAll('#statistikatPrintArea .stat-item .fw-bold');
+            if (statItems.length >= 4) {
+                statItems[0].textContent = stats.mesatarja != null ? stats.mesatarja : '-';
+                statItems[1].textContent = stats.kalueshmeria != null ? `${stats.kalueshmeria}%` : '-';
+                statItems[2].textContent = stats.moda != null ? stats.moda : '-';
+                statItems[3].textContent = stats.notaLarteUlet || '- / -';
+            }
+
+            const tbodyDist = document.querySelector('#statistikatPrintArea tbody');
+            if (tbodyDist && stats.distribution) {
+                tbodyDist.innerHTML = '';
+                stats.distribution.forEach(d => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'border-bottom';
+                    tr.innerHTML = `
+                        <td class="fw-semibold">${d.nota}</td>
+                        <td class="text-center">${d.studentCount}</td>
+                        <td class="text-end text-muted">${d.perqindja}%</td>
+                    `;
+                    tbodyDist.appendChild(tr);
+                });
+            }
+        }
+
+        // 4. RUAJTJA E NOTAVE & MUNGESAVE ME API
+        function showSuccessSticker(title = 'Notat u ruajten me sukses!') {
+            let modal = document.getElementById('successStickerModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'successStickerModal';
+                modal.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.4); backdrop-filter:blur(4px); z-index:99999; align-items:center; justify-content:center; opacity:0; transition:opacity 0.25s ease;';
+                modal.innerHTML = `
+                    <div id="stickerCard" style="background:#ffffff; border-radius:24px; padding:32px 40px; text-align:center; box-shadow:0 25px 50px rgba(0,0,0,0.22); transform:scale(0.7); transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); max-width:360px; width:90%; border:1px solid #bbf7d0;">
+                        <div style="width:84px; height:84px; background:#dcfce7; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:16px; box-shadow:0 0 0 8px #f0fdf4;">
+                            <i class="bi bi-check-lg" style="font-size:3.3rem; color:#16a34a; line-height:1; font-weight:900;"></i>
+                        </div>
+                        <h4 style="font-weight:700; color:#0f172a; margin-bottom:0;" id="stickerTitle">Notat u ruajten me sukses!</h4>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                modal.addEventListener('click', () => hideSuccessSticker());
+            }
+
+            const titleEl = modal.querySelector('#stickerTitle');
+            if (titleEl) titleEl.textContent = title;
+
+            modal.style.display = 'flex';
+            requestAnimationFrame(() => {
+                modal.style.opacity = '1';
+                const card = modal.querySelector('#stickerCard');
+                if (card) card.style.transform = 'scale(1)';
+            });
+
+            setTimeout(() => {
+                hideSuccessSticker();
+            }, 1800);
+        }
+
+        function hideSuccessSticker() {
+            const modal = document.getElementById('successStickerModal');
+            if (!modal || modal.style.display === 'none') return;
+            modal.style.opacity = '0';
+            const card = modal.querySelector('#stickerCard');
+            if (card) card.style.transform = 'scale(0.8)';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 250);
+        }
+
+        function showStatusMessage(containerId, message, isSuccess) {
+            const el = document.getElementById(containerId);
+            if (!el) return;
+            el.className = `alert ${isSuccess ? 'alert-success' : 'alert-danger'} py-1 px-3 mb-0 small d-inline-flex align-items-center gap-2 rounded-2 shadow-sm`;
+            el.innerHTML = `<i class="bi ${isSuccess ? 'bi-check-circle-fill text-success' : 'bi-exclamation-circle-fill text-danger'}"></i> <span class="fw-semibold">${message}</span>`;
+            el.classList.remove('d-none');
+            setTimeout(() => {
+                el.classList.add('d-none');
+            }, 4000);
+        }
+
+        async function ruajNotat() {
+            const selectLenda = document.getElementById('selectLenda');
+            const selectKlasa = document.getElementById('selectKlasa');
+            const courseId = selectLenda && selectLenda.selectedIndex >= 0 ? parseInt(selectLenda.options[selectLenda.selectedIndex].dataset.courseId) : null;
+            const classId = selectKlasa && selectKlasa.selectedIndex >= 0 ? parseInt(selectKlasa.options[selectKlasa.selectedIndex].dataset.classId) : null;
+
+            if (!courseId || !classId) {
+                showStatusMessage('statusNotatMsg', 'Ju lutem zgjidhni lenden dhe klasen.', false);
+                return;
+            }
+
+            const rows = document.querySelectorAll('#rregjistriTableBody tr');
+            const gradeEntries = [];
+            let kaNoteJashteLimitit = false;
+            let firstInvalidInput = null;
+
+            rows.forEach(tr => {
+                const sId = tr.dataset.studentId ? parseInt(tr.dataset.studentId) : null;
+                const notaInput = tr.querySelector('.student-nota');
+                const statusBadge = tr.querySelector('.student-status');
+                const rawVal = notaInput ? notaInput.value.trim() : '';
+                const gVal = rawVal !== '' ? parseFloat(rawVal) : null;
+
+                if (gVal !== null && (isNaN(gVal) || gVal < 4 || gVal > 10)) {
+                    kaNoteJashteLimitit = true;
+                    if (notaInput) {
+                        notaInput.classList.add('border', 'border-danger', 'text-danger', 'bg-danger-subtle');
+                        if (!firstInvalidInput) firstInvalidInput = notaInput;
+                    }
+                } else if (notaInput) {
+                    notaInput.classList.remove('border-danger', 'text-danger', 'bg-danger-subtle');
+                }
+
+                const st = statusBadge ? statusBadge.textContent.trim() : "-";
+
+                if (sId) {
+                    gradeEntries.push({
+                        studentId: sId,
+                        grade: gVal,
+                        status: st
+                    });
+                }
+            });
+
+            if (kaNoteJashteLimitit) {
+                if (firstInvalidInput) firstInvalidInput.focus();
+                showStatusMessage('statusNotatMsg', 'Notat nuk u ruajten!', false);
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/pedagog/grades', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        courseId: courseId,
+                        classId: classId,
+                        grades: gradeEntries
+                    })
+                });
+
+                if (res.ok) {
+                    showSuccessSticker('Notat u ruajten me sukses!');
+                    gradeEntries.forEach(g => {
+                        if (g.grade !== null) {
+                            const chk = document.querySelector(`#examAttendanceTableBody .exam-att-check[data-student-id="${g.studentId}"]`);
+                            if (chk) chk.checked = true;
+                        }
+                    });
+                } else {
+                    let errMsg = 'Gabim gjate ruajtjes se notave.';
+                    try { const err = await res.json(); if (err.message) errMsg = err.message; } catch (_) { }
+                    showStatusMessage('statusNotatMsg', errMsg, false);
+                }
+            } catch (e) {
+                console.error("Gabim ruajtje notash:", e);
+                showStatusMessage('statusNotatMsg', 'Gabim lidhjeje gjate ruajtjes se notave.', false);
+            }
+        }
+
+        async function ruajMungesat() {
+            const selectLenda = document.getElementById('selectLenda');
+            const selectKlasa = document.getElementById('selectKlasa');
+            const courseId = selectLenda && selectLenda.selectedIndex >= 0 ? parseInt(selectLenda.options[selectLenda.selectedIndex].dataset.courseId) : null;
+            const classId = selectKlasa && selectKlasa.selectedIndex >= 0 ? parseInt(selectKlasa.options[selectKlasa.selectedIndex].dataset.classId) : null;
+
+            if (!courseId || !classId) {
+                showStatusMessage('statusMungesatMsg', 'Ju lutem zgjidhni lenden dhe klasen.', false);
+                return;
+            }
+
+            const rows = document.querySelectorAll('#mungesatTableBody tr');
+            const attEntries = [];
+
+            rows.forEach(tr => {
+                const sId = tr.dataset.studentId ? parseInt(tr.dataset.studentId) : null;
+                const checkboxes = tr.querySelectorAll('.student-att-check');
+                const attMap = {};
+
+                checkboxes.forEach(cb => {
+                    const colKey = cb.dataset.col;
+                    if (colKey) attMap[colKey] = cb.checked;
+                });
+
+                if (sId) {
+                    attEntries.push({
+                        studentId: sId,
+                        attendance: attMap
+                    });
+                }
+            });
+
+            try {
+                const res = await fetch('/api/pedagog/attendance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        courseId: courseId,
+                        classId: classId,
+                        attendances: attEntries
+                    })
+                });
+
+                if (res.ok) {
+                    showSuccessSticker('Mungesat u ruajten me sukses!');
+                } else {
+                    let errMsg = 'Gabim gjate ruajtjes se mungesave.';
+                    try {
+                        const err = await res.json();
+                        if (err.message) errMsg = err.message;
+                    } catch (_) { }
+                    showStatusMessage('statusMungesatMsg', errMsg, false);
+                }
+            } catch (e) {
+                console.error("Gabim ruajtje mungesash:", e);
+                showStatusMessage('statusMungesatMsg', 'Gabim lidhjeje gjate ruajtjes se mungesave.', false);
+            }
+        }
+
+        // 5. EXCEL VEPRIME (EXPORT)
+        function shkarkoExcelNotat(filterType) {
+            const rows = document.querySelectorAll('#rregjistriTableBody tr');
+            const data = [];
+
+            const isVetEmri = (filterType === 'permiresime' || filterType === 'ngelasa' || filterType === 'ngelasa_permiresime');
+
+            // Header sipas tipit te shkarkimit
+            if (filterType === 'gjitha') {
+                data.push(["Student", "Nota"]);
+            } else if (isVetEmri) {
+                data.push(["Student"]);
+            } else {
+                data.push(["Nr.", "Student", "Nr. Matrikullimit", "Nota", "Statusi"]);
+            }
+
+            const items = [];
+            rows.forEach(tr => {
+                const emri = tr.querySelector('.student-emri')?.textContent.trim() || '';
+                const amza = tr.querySelector('.student-amza')?.textContent.trim() || '';
+                const nota = tr.querySelector('.student-nota')?.value || '';
+                const status = tr.querySelector('.student-status')?.textContent.trim() || '-';
+                const isPermiresim = tr.dataset.permiresim === "true" || status === "P";
+                const isPaNote = (nota === '' || isNaN(parseFloat(nota)));
+                const isNgeles = isPaNote || (parseFloat(nota) < 5) || status === "N";
+
+                let include = false;
+                if (filterType === 'gjitha') include = true;
+                else if (filterType === 'permiresime' && isPermiresim) include = true;
+                else if (filterType === 'ngelasa' && isNgeles) include = true;
+                else if (filterType === 'ngelasa_permiresime' && (isNgeles || isPermiresim)) include = true;
+
+                if (include) {
+                    items.push({ emri, amza, nota, status });
+                }
+            });
+
+            if (items.length === 0) {
+                alert("Nuk ka te dhena per filtrin e zgjedhur.");
+                return;
+            }
+
+            // Renditja gjithmone alfabetikisht sipas emrit
+            items.sort((a, b) => (a.emri || '').localeCompare(b.emri || '', 'sq', { sensitivity: 'base' }));
+
+            let idxCount = 1;
+            items.forEach(item => {
+                if (filterType === 'gjitha') {
+                    data.push([item.emri, item.nota !== '' ? Number(item.nota) : '']);
+                } else if (isVetEmri) {
+                    data.push([item.emri]);
+                } else {
+                    data.push([idxCount++, item.emri, item.amza, item.nota !== '' ? Number(item.nota) : '', item.status]);
+                }
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Notat");
+            XLSX.writeFile(wb, `Notat_${filterType}.xlsx`);
+        }
+
+        // 6. PDF EXPORT
+        async function shkarkoStatistikatPDF() {
+            const btn = document.getElementById('btnShkarkoPDF');
+            const element = document.getElementById('statistikatPrintArea');
+
+            if (!element) { alert('Elementi nuk u gjet!'); return; }
+
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Po gjenerohet...';
+
+            const clone = element.cloneNode(true);
+            const cloneHeader = clone.querySelector('.pdf-only-header');
+            if (cloneHeader) cloneHeader.classList.remove('d-none');
+
+            clone.style.position = 'fixed';
+            clone.style.top = '0';
+            clone.style.left = '-9999px';
+            clone.style.width = '1100px';
+            clone.style.background = '#ffffff';
+            clone.style.zIndex = '-1';
+            clone.style.padding = '24px';
+            document.body.appendChild(clone);
+
+            try {
+                const canvas = await html2canvas(clone, {
+                    scale: 1.5,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    width: clone.scrollWidth,
+                    height: clone.scrollHeight,
+                    windowWidth: 1100
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.92);
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+                const pgW = pdf.internal.pageSize.getWidth();
+                const pgH = pdf.internal.pageSize.getHeight();
+                const margin = 8;
+                const imgW = pgW - margin * 2;
+                const imgH = (canvas.height * imgW) / canvas.width;
+
+                let yOff = 0;
+                while (yOff < imgH) {
+                    if (yOff > 0) pdf.addPage();
+                    pdf.addImage(imgData, 'JPEG', margin, margin - yOff, imgW, imgH);
+                    yOff += pgH - margin * 2;
+                }
+
+                pdf.save('Statistikat_Rregjistri.pdf');
+            } catch (err) {
+                console.error('Gabim PDF:', err);
+                alert('Gabim gjate gjenerimit te PDF: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                if (clone && clone.parentNode) {
+                    clone.parentNode.removeChild(clone);
+                }
+            }
+        }
+
+        // 7. TEMAT API (TOPICS)
+        async function ngarkoTemat(courseId) {
+            if (!courseId) {
+                const selectLenda = document.getElementById('selectLenda');
+                const selectedOpt = selectLenda ? selectLenda.options[selectLenda.selectedIndex] : null;
+                courseId = selectedOpt && selectedOpt.dataset ? selectedOpt.dataset.courseId : null;
+            }
+
+            let url = '/api/topics';
+            if (courseId) url += '?courseId=' + courseId;
+
+            try {
+                const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('jwtToken') || '') } });
+                if (res.ok) {
+                    meksTemat = await res.json();
+                    renditTematTabeles(meksTemat);
+                }
+            } catch (e) {
+                console.error("Gabim te ngarkimi i temave:", e);
+            }
+        }
+
+        function renditTematTabeles(temat) {
+            const tbody = document.getElementById('tematTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (!temat || temat.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">Nuk ka tema te regjistruara per kete lende. Shtoni temat me datat perkatese me poshte.</td></tr>';
+                return;
+            }
+
+            temat.forEach(t => {
+                const dataText = t.topicDate || t.formattedDate || '-';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="fw-bold jave-cell text-dark">${t.weekNumber || 1}</td>
+                    <td class="text-dark">${dataText}</td>
+                    <td class="tema-titull fw-semibold">${t.title || ''}</td>
+                    <td class="tema-pershkrimi text-muted">${t.description || '-'}</td>
+                    <td class="text-center">
+                        <button class="btn btn-btn-soft-amber btn-sm py-0 px-2 me-1" onclick="hapModalEditTema(${t.topicId})" title="Ndrysho">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-btn-soft-danger btn-sm py-0 px-2" onclick="fshijTemen(${t.topicId})" title="Fshij">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function hapModalShtoTema() {
+            document.getElementById('modalTemaTitle').textContent = 'Shto teme';
+            document.getElementById('temaId').value = '';
+            document.getElementById('temaJava').value = (meksTemat.length + 1);
+            document.getElementById('temaData').value = new Date().toISOString().split('T')[0];
+            document.getElementById('temaTitulli').value = '';
+            document.getElementById('temaPershkrimi').value = '';
+
+            const modalEl = document.getElementById('modalTema');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+
+        function hapModalEditTema(topicId) {
+            const t = meksTemat.find(item => item.topicId === topicId);
+            if (!t) return;
+
+            document.getElementById('modalTemaTitle').textContent = 'Perditeso Temen';
+            document.getElementById('temaId').value = t.topicId;
+            document.getElementById('temaJava').value = t.weekNumber || 1;
+            document.getElementById('temaData').value = t.topicDate || t.formattedDate || '';
+            document.getElementById('temaTitulli').value = t.title || '';
+            document.getElementById('temaPershkrimi').value = t.description || '';
+
+            const modalEl = document.getElementById('modalTema');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+
+        async function ruajTemen(event) {
+            event.preventDefault();
+
+            const topicId = document.getElementById('temaId').value;
+            const weekNumber = parseInt(document.getElementById('temaJava').value);
+            const topicDate = document.getElementById('temaData').value;
+            const title = document.getElementById('temaTitulli').value.trim();
+            const description = document.getElementById('temaPershkrimi').value.trim();
+
+            const selectLenda = document.getElementById('selectLenda');
+            const selectedOpt = selectLenda ? selectLenda.options[selectLenda.selectedIndex] : null;
+            const courseId = selectedOpt && selectedOpt.dataset ? parseInt(selectedOpt.dataset.courseId) : null;
+
+            const selectKlasa = document.getElementById('selectKlasa');
+            const classOpt = selectKlasa ? selectKlasa.options[selectKlasa.selectedIndex] : null;
+            const classId = classOpt && classOpt.dataset ? parseInt(classOpt.dataset.classId) : null;
+
+            const selectViti = document.getElementById('selectVitiAkademik');
+            const academicYear = selectViti ? selectViti.value : "2025-2026";
+            const selectTipi = document.getElementById('selectTipiOres');
+            const roleType = selectTipi ? selectTipi.value : "Seminar";
+
+            const payload = { weekNumber, topicDate, title, description, courseId };
+
+            try {
+                let res;
+                if (topicId) {
+                    res = await fetch('/api/topics/' + topicId, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    res = await fetch('/api/topics', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                if (res.ok) {
+                    const modalEl = document.getElementById('modalTema');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+
+                    await Promise.all([
+                        ngarkoTemat(courseId),
+                        ngarkoRegjistrin(courseId, classId, academicYear, roleType)
+                    ]);
+                } else {
+                    const errData = await res.json();
+                    alert(errData.message || 'Gabim gjate ruajtjes se temes.');
+                }
+            } catch (e) {
+                console.error("Gabim te ruajtja e temes:", e);
+            }
+        }
+
+        async function fshijTemen(topicId) {
+            if (!confirm("A jeni i sigurt qe deshironi ta fshini kete teme?")) return;
+
+            try {
+                const res = await fetch('/api/topics/' + topicId, { method: 'DELETE' });
+                if (res.ok) {
+                    const selectLenda = document.getElementById('selectLenda');
+                    const selectedOpt = selectLenda ? selectLenda.options[selectLenda.selectedIndex] : null;
+                    const courseId = selectedOpt && selectedOpt.dataset ? parseInt(selectedOpt.dataset.courseId) : null;
+
+                    const selectKlasa = document.getElementById('selectKlasa');
+                    const classOpt = selectKlasa ? selectKlasa.options[selectKlasa.selectedIndex] : null;
+                    const classId = classOpt && classOpt.dataset ? parseInt(classOpt.dataset.classId) : null;
+
+                    const selectViti = document.getElementById('selectVitiAkademik');
+                    const academicYear = selectViti ? selectViti.value : "2025-2026";
+                    const selectTipi = document.getElementById('selectTipiOres');
+                    const roleType = selectTipi ? selectTipi.value : "Seminar";
+
+                    await Promise.all([
+                        ngarkoTemat(courseId),
+                        ngarkoRegjistrin(courseId, classId, academicYear, roleType)
+                    ]);
+                }
+            } catch (e) {
+                console.error("Gabim te fshirja e temes:", e);
+            }
+        }
+
+        // ==========================================
+        // 8. PJESEMARRJA NE PROVIM (EXAM ATTENDANCE)
+        // ==========================================
+        let currentExamAttendanceData = null;
+
+        async function ngarkoExamAttendance(courseId, classId) {
+            if (!courseId) return;
+
+            const tbody = document.getElementById('examAttendanceTableBody');
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">
+                            <span class="spinner-border spinner-border-sm me-2"></span> Po ngarkohet pjesëmarrja në provim...
+                        </td>
+                    </tr>
+                `;
+            }
+
+            try {
+                let url = `/api/pedagog/exam-attendance?courseId=${courseId}`;
+                if (classId) url += `&classId=${classId}`;
+
+                const res = await fetch(url, {
+                    headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('jwtToken') || '') }
+                });
+
+                if (res.ok) {
+                    currentExamAttendanceData = await res.json();
+                    renditExamAttendance(currentExamAttendanceData);
+                } else {
+                    if (tbody) {
+                        tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-danger">Nuk u mundësua ngarkimi i provimit.</td></tr>`;
+                    }
+                }
+            } catch (err) {
+                console.error("Gabim te ngarkimi i provimit:", err);
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-danger">Gabim rrjeti gjatë ngarkimit të provimit.</td></tr>`;
+                }
+            }
+        }
+
+        function renditExamAttendance(data) {
+            if (!data) return;
+
+            // Mbush tabelen e studenteve
+            const tbody = document.getElementById('examAttendanceTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const students = data.students || [];
+            if (students.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center py-4 text-muted">
+                            Nuk u gjetën studentë për këtë lëndë/grup.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            students.forEach((s, idx) => {
+                const isPresent = (s.status !== 'absent'); // By default me tik (present)!
+
+                const tr = document.createElement('tr');
+                tr.dataset.studentId = s.studentId;
+
+                tr.innerHTML = `
+                    <td>${idx + 1}</td>
+                    <td class="fw-semibold text-dark student-name-cell">${s.studentName || ''}</td>
+                    <td class="text-center">
+                        <input class="form-check-input form-check-amber-light exam-att-check"
+                            type="checkbox" ${isPresent ? 'checked' : ''}
+                            data-student-id="${s.studentId}"
+                            style="cursor: pointer; transform: scale(1.15);"
+                            title="Hiq tikun nëse studenti nuk është paraqitur në provim">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function toggleAllExamChecks(master) {
+            const isChecked = master ? master.checked : true;
+            document.querySelectorAll('#examAttendanceTableBody .exam-att-check').forEach(chk => {
+                chk.checked = isChecked;
+            });
+        }
+
+        async function ruajExamAttendance() {
+            const selectLenda = document.getElementById('selectLenda');
+            const selectKlasa = document.getElementById('selectKlasa');
+            const courseId = selectLenda && selectLenda.selectedIndex >= 0 ? parseInt(selectLenda.options[selectLenda.selectedIndex].dataset.courseId) : null;
+            const classId = selectKlasa && selectKlasa.selectedIndex >= 0 ? parseInt(selectKlasa.options[selectKlasa.selectedIndex].dataset.classId) : null;
+
+            if (!courseId) {
+                alert("Ju lutem zgjidhni një lëndë!");
+                return;
+            }
+
+            const checkboxes = document.querySelectorAll('#examAttendanceTableBody .exam-att-check');
+            const entries = [];
+
+            checkboxes.forEach(chk => {
+                const sId = chk.dataset.studentId ? parseInt(chk.dataset.studentId) : null;
+                const isChecked = chk.checked;
+                if (sId) {
+                    entries.push({
+                        studentId: sId,
+                        status: isChecked ? 'present' : 'absent'
+                    });
+                }
+            });
+
+            if (entries.length === 0) {
+                alert("Nuk ka studentë për të ruajtur pjesëmarrjen!");
+                return;
+            }
+
+            const payload = {
+                examId: currentExamAttendanceData ? currentExamAttendanceData.examId : null,
+                courseId: courseId,
+                classId: classId,
+                entries: entries
+            };
+
+            try {
+                const res = await fetch('/api/pedagog/exam-attendance', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + (localStorage.getItem('jwtToken') || '')
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    showSuccessSticker('Pjesëmarrja në provim u ruajt me sukses!');
+
+                    // Rifreskojme regjistrin e notave qe studentet "NP" te bllokohen automatikisht!
+                    const selectViti = document.getElementById('selectVitiAkademik');
+                    const academicYear = selectViti ? selectViti.value : "2025-2026";
+                    const selectTipi = document.getElementById('selectTipiOres');
+                    const roleType = selectTipi ? selectTipi.value : "Seminar";
+
+                    await ngarkoRegjistrin(courseId, classId, academicYear, roleType);
+                } else {
+                    const err = await res.json();
+                    alert("Gabim gjatë ruajtjes: " + (err.message || 'Kontrolloni të dhënat'));
+                }
+            } catch (err) {
+                console.error("Gabim gjate ruajtjes se pjesemarrjes ne provim:", err);
+                alert("Gabim rrjeti gjatë ruajtjes!");
+            }
+        }
+    </script>
+
+    <div class="modal fade" id="modalTema" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold text-dark" id="modalTemaTitle">Shto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Anulo"></button>
+                </div>
+                <form id="formTema" onsubmit="ruajTemen(event)">
+                    <div class="modal-body p-4">
+                        <input type="hidden" id="temaId">
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-sm-4">
+                                <label class="form-label fw-semibold text-dark">Java</label>
+                                <input type="number" class="form-control" id="temaJava" min="1" max="30" required
+                                    placeholder="p.sh. 1">
+                            </div>
+                            <div class="col-sm-8">
+                                <label class="form-label fw-semibold text-dark">Data</label>
+                                <input type="date" class="form-control" id="temaData" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-dark">Tema</label>
+                            <input type="text" class="form-control" id="temaTitulli" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-dark">Pershkrimi</label>
+                            <textarea class="form-control" id="temaPershkrimi" rows="3"
+                                placeholder="Detaje mbi temen"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Anulo</button>
+                        <button type="submit" class="btn btn-amber-light btn-sm fw-semibold"
+                            id="btnRuajTema">Ruaj</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

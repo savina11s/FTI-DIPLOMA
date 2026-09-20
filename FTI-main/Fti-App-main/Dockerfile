@@ -16,4 +16,4 @@ RUN ./mvnw clean package -DskipTests
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "tailscaled --tun=userspace-networking --socks5-server=127.0.0.1:1055 & sleep 5 && tailscale up --auth-key=$TS_AUTHKEY && java -Doracle.net.socksProxyHost=127.0.0.1 -Doracle.net.socksProxyPort=1055 -jar target/*.jar"]
+CMD ["sh", "-c", "tailscaled --tun=userspace-networking --socks5-server=127.0.0.1:1055 & TAILSCALE_PID=$!; sleep 5; tailscale up --auth-key=$TS_AUTHKEY; sleep 5; java -Doracle.net.socksProxyHost=127.0.0.1 -Doracle.net.socksProxyPort=1055 -jar target/*.jar"]
